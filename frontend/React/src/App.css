@@ -1,184 +1,224 @@
-.counter {
-  font-size: 16px;
-  padding: 5px 10px;
-  border-radius: 5px;
-  color: var(--accent);
-  background: var(--accent-bg);
-  border: 2px solid transparent;
-  transition: border-color 0.3s;
-  margin-bottom: 24px;
+/* frontend/src/App.css */
 
-  &:hover {
-    border-color: var(--accent-border);
-  }
-  &:focus-visible {
-    outline: 2px solid var(--accent);
-    outline-offset: 2px;
-  }
+/* Configuración global de pantalla */
+#root {
+  width: 100%;
+  height: 100vh;
+  margin: 0;
+  padding: 0;
 }
 
-.hero {
-  position: relative;
-
-  .base,
-  .framework,
-  .vite {
-    inset-inline: 0;
-    margin: 0 auto;
-  }
-
-  .base {
-    width: 170px;
-    position: relative;
-    z-index: 0;
-  }
-
-  .framework,
-  .vite {
-    position: absolute;
-  }
-
-  .framework {
-    z-index: 1;
-    top: 34px;
-    height: 28px;
-    transform: perspective(2000px) rotateZ(300deg) rotateX(44deg) rotateY(39deg)
-      scale(1.4);
-  }
-
-  .vite {
-    z-index: 0;
-    top: 107px;
-    height: 26px;
-    width: auto;
-    transform: perspective(2000px) rotateZ(300deg) rotateX(40deg) rotateY(39deg)
-      scale(0.8);
-  }
+body {
+  margin: 0;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  background: radial-gradient(circle at 30% 50%, #f1f3f9 0%, #fdfbfd 100%);
+  color: #333333;
+  overflow: hidden;
 }
 
-#center {
+.app-wrapper {
   display: flex;
   flex-direction: column;
-  gap: 25px;
-  place-content: center;
-  place-items: center;
-  flex-grow: 1;
-
-  @media (max-width: 1024px) {
-    padding: 32px 20px 24px;
-    gap: 18px;
-  }
+  height: 100vh;
 }
 
-#next-steps {
+/* 1. ESTILOS DE LA BARRA SUPERIOR */
+.navbar {
   display: flex;
-  border-top: 1px solid var(--border);
-  text-align: left;
-
-  & > div {
-    flex: 1 1 0;
-    padding: 32px;
-    @media (max-width: 1024px) {
-      padding: 24px 20px;
-    }
-  }
-
-  .icon {
-    margin-bottom: 16px;
-    width: 22px;
-    height: 22px;
-  }
-
-  @media (max-width: 1024px) {
-    flex-direction: column;
-    text-align: center;
-  }
+  justify-content: space-between;
+  align-items: center;
+  height: 65px;
+  padding: 0 24px;
+  background-color: #ffffff;
+  border-bottom: 2px solid #8b5cf6; /* Línea de acento violeta superior */
 }
 
-#docs {
-  border-right: 1px solid var(--border);
-
-  @media (max-width: 1024px) {
-    border-right: none;
-    border-bottom: 1px solid var(--border);
-  }
+.logo-box {
+  width: 32px;
+  height: 32px;
+  background-color: #9d174d; /* Color guinda/púrpura del logo de la imagen */
+  border-radius: 8px;
 }
 
-#next-steps ul {
-  list-style: none;
-  padding: 0;
+.nav-right {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.user-name {
+  font-size: 0.9rem;
+  font-weight: 500;
+  color: #6b7280;
+  background-color: #f3f4f6;
+  padding: 4px 16px;
+  border-radius: 20px;
+  letter-spacing: 2px;
+}
+
+.avatar {
+  width: 36px;
+  height: 36px;
+  background-color: #e05638; /* Círculo naranja del perfil */
+  border-radius: 50%;
+}
+
+/* DISTRIBUCIÓN DEL ESPACIO DE TRABAJO (GRID) */
+.main-layout {
+  display: grid;
+  grid-template-columns: 1fr 320px; /* Divide el chat de la barra derecha */
+  flex: 1;
+  height: calc(100vh - 65px);
+}
+
+/* 2. SECCIÓN CENTRAL DEL CHAT */
+.chat-section {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 40px;
+  overflow-y: auto;
+}
+
+.welcome-container {
+  width: 100%;
+  max-width: 680px;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.welcome-title {
+  color: #6b21a8; /* Tono morado idéntico al de la imagen */
+  font-size: 2.2rem;
+  font-weight: 700;
+  margin: 0 0 24px 0;
+}
+
+.welcome-subtitle {
+  color: #6b7280;
+  font-size: 1.15rem;
+  line-height: 1.6;
+  max-width: 500px;
+  margin: 0 0 32px 0;
+}
+
+/* TARJETA DE ENTRADA (INPUT COMPONENT) */
+.input-card {
+  width: 100%;
+  background-color: #ffffff;
+  border-radius: 16px;
+  padding: 16px;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.04);
+  border: 1px solid #e5e7eb;
+  box-sizing: border-box;
+}
+
+.input-card textarea {
+  width: 100%;
+  border: none;
+  resize: none;
+  outline: none;
+  font-size: 1rem;
+  color: #1f2937;
+  font-family: inherit;
+  margin-bottom: 12px;
+}
+
+.input-card textarea::placeholder {
+  color: #9ca3af;
+}
+
+/* BARRA DE BOTONES INTERNA */
+.input-actions-bar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.actions-left {
   display: flex;
   gap: 8px;
-  margin: 32px 0 0;
-
-  .logo {
-    height: 18px;
-  }
-
-  a {
-    color: var(--text-h);
-    font-size: 16px;
-    border-radius: 6px;
-    background: var(--social-bg);
-    display: flex;
-    padding: 6px 12px;
-    align-items: center;
-    gap: 8px;
-    text-decoration: none;
-    transition: box-shadow 0.3s;
-
-    &:hover {
-      box-shadow: var(--shadow);
-    }
-    .button-icon {
-      height: 18px;
-      width: 18px;
-    }
-  }
-
-  @media (max-width: 1024px) {
-    margin-top: 20px;
-    flex-wrap: wrap;
-    justify-content: center;
-
-    li {
-      flex: 1 1 calc(50% - 8px);
-    }
-
-    a {
-      width: 100%;
-      justify-content: center;
-      box-sizing: border-box;
-    }
-  }
 }
 
-#spacer {
-  height: 88px;
-  border-top: 1px solid var(--border);
-  @media (max-width: 1024px) {
-    height: 48px;
-  }
+.action-select {
+  background-color: #f3f4f6;
+  border: 1px solid #e5e7eb;
+  padding: 6px 12px;
+  border-radius: 8px;
+  font-size: 0.85rem;
+  color: #4b5563;
+  outline: none;
+  cursor: pointer;
 }
 
-.ticks {
-  position: relative;
+.actions-right {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.icon-btn {
+  background: none;
+  border: none;
+  font-size: 1.2rem;
+  cursor: pointer;
+  padding: 4px;
+}
+
+.submit-btn {
+  background-color: #701a75; /* Círculo morado oscuro para enviar */
+  color: #ffffff;
+  border: none;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  cursor: pointer;
+  font-weight: bold;
+  transition: transform 0.1s ease;
+}
+
+.submit-btn:hover {
+  transform: scale(1.05);
+}
+
+.disclaimer-text {
+  font-size: 0.75rem;
+  color: #9ca3af;
+  margin-top: 12px;
+}
+
+.quick-start {
+  margin-top: 40px;
+  font-size: 0.9rem;
+  color: #9ca3af;
+}
+
+/* 3. ESTILOS DE LA BARRA LATERAL DERECHA (SIDEBAR) */
+.sidebar-right {
+  background-color: #ffffff;
+  border-left: 1px solid #e5e7eb;
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+/* Rectángulos grises simulados de la referencia */
+.sidebar-block-top {
   width: 100%;
+  height: 140px;
+  background-color: #e5e7eb;
+  border-radius: 4px;
+}
 
-  &::before,
-  &::after {
-    content: '';
-    position: absolute;
-    top: -4.5px;
-    border: 5px solid transparent;
-  }
-
-  &::before {
-    left: 0;
-    border-left-color: var(--border);
-  }
-  &::after {
-    right: 0;
-    border-right-color: var(--border);
-  }
+.sidebar-block-bottom {
+  width: 100%;
+  height: 40px;
+  background-color: #e5e7eb;
+  border-radius: 4px;
 }
