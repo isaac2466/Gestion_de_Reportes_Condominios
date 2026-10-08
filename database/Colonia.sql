@@ -26,10 +26,10 @@ confianza_ia DECIMAL (5,2),
 estado ENUM ('Pendiente', 'En Progreso', 'Resuelto', 'Rechazado') default 'Pendiente',
 fecha_creacion TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
 fecha_actualizacion TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-FOREING_KEY (id_habitante) REFERENCES habitantes(id) ON DELETE CASCADE
+FOREIGN KEY (id_habitante) REFERENCES habitantes(id_habitante) ON DELETE CASCADE
 );
 
-CREATE TABLE imagenes_reporte(
+CREATE TABLE imagenes_reportes(
 id INT AUTO_INCREMENT PRIMARY KEY,
 id_reporte INT NOT NULL,
 url_imagen VARCHAR(255) NOT NULL,

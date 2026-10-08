@@ -1,5 +1,10 @@
 import uuid
 import os
+
+from starlette.concurrency import run_in_threadpool
+
+from app.services.ai_service import analyze_report
+
 from fastapi import FastAPI, Depends, HTTPException, File, UploadFile, Form
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
@@ -131,10 +136,25 @@ async def crear_reporte(
         raise HTTPException(status_code=404, detail="El habitante especificado no existe")
 
     # Analizar con IA (Ollama)
-    analisis_ia = await analizar_reporte_con_ia(
-        descripcion=descripcion,
-        direccion_habitante=habitante.Direccion
+    analisis_ia = await run_in_threadpool(
+        analyze_report,
+        titulo,
+        descripcion,
+        locacion or habitante.Direccion,
     )
+
+    if analisis_ia:
+        categoria = analisis_ia["category"]
+        prioridad = PrioridadEnum(analisis_ia["priority"])
+        severidad = analisis_ia["severity"]
+        resumen_ia = analisis_ia["summary"]
+        recomendacion_ia = analisis_ia["recommendation"]
+    else:
+        categoria = None
+        prioridad = PrioridadEnum.Medium
+        severidad = 1
+        resumen_ia = None
+        recomendacion_ia = None
 
     # Guardar reporte en MySQL
     nuevo_reporte = Reporte(
@@ -142,13 +162,17 @@ async def crear_reporte(
         titulo=titulo,
         descripcion=descripcion,
         locacion=locacion or habitante.Direccion,
-        categoria=analisis_ia.get("categoria"),
-        prioridad=analisis_ia.get("prioridad", "Medium"),
-        severidad=analisis_ia.get("severidad", 1),
-        resumen_ia=analisis_ia.get("resumen_ia"),
-        recomendacion_ia=analisis_ia.get("recomendacion_ia"),
-        confianza_ia=analisis_ia.get("confianza_ia", 0.0),
-        estado="Pendiente"
+
+        categoria=categoria,
+        prioridad=prioridad,
+        severidad=severidad,
+
+        resumen_ia=resumen_ia,
+        recomendacion_ia=recomendacion_ia,
+
+        confianza_ia=None,
+
+        estado=EstadoEnum.Pendiente,
     )
 
     db.add(nuevo_reporte)
