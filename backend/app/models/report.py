@@ -32,3 +32,11 @@ class Reporte(Base):
     estado = Column(SQLEnum(EstadoEnum), default=EstadoEnum.Pendiente)
     fecha_creacion = Column(TIMESTAMP, server_default=func.now())
     fecha_actualizacion = Column(TIMESTAMP, server_default=func.now(), onupdate=func.now())
+
+class ImagenReporte(Base):
+    __tablename__ = "imagenes_reportes"
+
+    id = Column(Integer, primary_key=True, index=True)
+    id_reporte = Column(Integer, ForeignKey("reportes.id", ondelete="CASCADE"), nullable=False)
+    url_imagen = Column(String(255), nullable=False)
+    fecha_subida = Column(TIMESTAMP, server_default=func.now())    
