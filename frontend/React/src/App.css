@@ -9,11 +9,17 @@
 }
 
 body {
-  margin: 0;
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-  background: radial-gradient(circle at 30% 50%, #f1f3f9 0%, #fdfbfd 100%);
+ margin: 0;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI",
+    Roboto, Helvetica, Arial, sans-serif;
+  background: radial-gradient(
+    circle at 30% 50%,
+    #f1f3f9 0%,
+    #fdfbfd 100%
+  );
   color: #333333;
-  overflow: hidden;
+  overflow-x: hidden;
+  overflow-y: auto;
 }
 
 .app-wrapper {
@@ -105,37 +111,63 @@ body {
 }
 
 /* TARJETA DE ENTRADA (INPUT COMPONENT) */
+
+
+/* ============================================================
+   TARJETA DE ENTRADA (INPUT COMPONENT) - REDISEÑO UI/UX
+============================================================ */
+
 .input-card {
   width: 100%;
   background-color: #ffffff;
   border-radius: 16px;
-  padding: 16px;
+  padding: 18px 20px; /* Aumentamos ligeramente el aire interno para mayor elegancia */
   box-shadow: 0 10px 25px rgba(0, 0, 0, 0.04);
   border: 1px solid #e5e7eb;
   box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
 }
 
+/* NUEVO: Estilizado minimalista para el título */
+.input-card input[type="text"] {
+  width: 100%;
+  border: none;
+  outline: none;
+  background: transparent;
+  font-size: 1.05rem; /* Un toque más grande que la descripción para jerarquía */
+  font-weight: 600;    /* Peso tipográfico semibold para destacar */
+  color: #1f2937;      /* Mismo color base que tu textarea */
+  font-family: inherit;
+  padding: 0 0 12px 0; /* Espacio inferior antes de la línea divisoria */
+  margin-bottom: 12px; /* Margen para separar del textarea */
+  border-bottom: 1px solid #f3f4f6; /* Línea divisoria sumamente sutil (#e5e7eb atenuado) */
+}
+
+/* Modificamos el placeholder del título para que sea sutil */
+.input-card input[type="text"]::placeholder {
+  color: #9ca3af;
+  font-weight: 400; /* El texto sugerido no debe ser bold */
+}
+
+/* Tu textarea original adaptado sin márgenes toscos */
 .input-card textarea {
   width: 100%;
   border: none;
   resize: none;
   outline: none;
   font-size: 1rem;
-  color: #1f2937;
+  color: #4b5563; /* Cambiado sutilmente a un gris más suave para dar jerarquía visual */
   font-family: inherit;
   margin-bottom: 12px;
+  background: transparent;
+  padding: 4px 0;
 }
 
 .input-card textarea::placeholder {
   color: #9ca3af;
 }
 
-/* BARRA DE BOTONES INTERNA */
-.input-actions-bar {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
 
 .actions-left {
   display: flex;
@@ -371,4 +403,773 @@ body {
   height: 1px;
   background-color: #e2e8f0;
   margin: 10px 0;
+}
+/* Solo agrega estilos que tu App.css no trae. No modifica ninguna de sus reglas.
+   No usa .sidebar-block-top / .sidebar-block-bottom (en tu CSS son rectángulos grises de altura fija). */
+
+/* Barra lateral de dos secciones */
+.sidebar-right { overflow-y: auto; justify-content: flex-start; gap: 4px; }
+.sidebar-section { display: flex; flex-direction: column; gap: 12px; min-height: 0; }
+.sidebar-section-head { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; border-bottom: 1px solid #e2e8f0; padding-bottom: 4px; }
+.sidebar-section-head h3 { margin: 0; font-size: 1rem; font-weight: 600; color: #1e293b; }
+.sidebar-section-head span { font-size: .72rem; color: #6b7280; text-align: right; }
+.sidebar-right .scroll-historial { max-height: 26vh; }
+
+/* Tarjetas de reporte */
+.reporte-item-card { background: #fff; border: 1px solid #e5e7eb; border-radius: 12px; padding: 12px 14px; cursor: pointer; transition: border-color .15s; }
+.reporte-item-card:hover { border-color: #8b5cf6; }
+.reporte-item-card:focus-visible { outline: 3px solid #8b5cf6; outline-offset: 2px; }
+.reporte-card-header { display: flex; justify-content: space-between; align-items: flex-start; gap: 8px; }
+.reporte-card-header h4 { margin: 0; font-size: .95rem; font-weight: 600; color: #111827; }
+.reporte-card-location { margin: 4px 0 0; font-size: .85rem; color: #6b7280; }
+
+/* Etiquetas de estado */
+.badge-status { padding: 2px 10px; border-radius: 999px; font-size: .75rem; font-weight: 700; white-space: nowrap; }
+.badge-status.pendiente { background: #fdeab0; color: #7a5800; }
+.badge-status.proceso { background: #dbe7ff; color: #1e429f; }
+
+/* Ventana emergente */
+.modal-overlay { position: fixed; inset: 0; background: rgba(15, 23, 42, .55); display: flex; justify-content: center; align-items: center; padding: 16px; z-index: 50; }
+.modal-container { background: #fff; border-radius: 16px; width: min(560px, 100%); max-height: 90vh; overflow-y: auto; box-shadow: 0 20px 50px rgba(0, 0, 0, .25); }
+.modal-header { display: flex; justify-content: space-between; align-items: center; padding: 16px 20px; border-bottom: 1px solid #e5e7eb; }
+.modal-header h2 { margin: 0; font-size: 1.1rem; color: #6b21a8; }
+.modal-close-x { background: none; border: 0; font-size: 1.1rem; cursor: pointer; color: #6b7280; }
+.modal-body { padding: 16px 20px; }
+.modal-body h3 { margin: 0 0 12px; }
+.modal-body p { margin: 8px 0; }
+.modal-status-highlight { background: #f3e8ff; color: #581c87; padding: 10px 14px; border-radius: 10px; margin: 14px 0; }
+.ai-analysis-box { background: #f8fafc; border: 1px solid #e2e8f0; border-left: 4px solid #8b5cf6; border-radius: 10px; padding: 14px; }
+.ai-analysis-box h4 { margin: 0 0 10px; color: #6b21a8; }
+.ai-meta-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; font-size: .88rem; }
+.ai-summary { font-size: .92rem; }
+.ai-recommendation-alert { background: #fff7e0; border-radius: 8px; padding: 10px 12px; font-size: .9rem; margin-top: 8px; }
+.modal-footer { padding: 12px 20px 18px; display: flex; justify-content: flex-end; }
+.modal-btn-confirm { background: #701a75; color: #fff; border: 0; border-radius: 10px; padding: 8px 20px; font-weight: 600; cursor: pointer; }
+
+/* Mensajes y estados del formulario */
+.field-error { color: #b3261e; font-size: .85rem; margin: 0 0 8px; text-align: left; }
+.voice-btn.escuchando { background: #f3e8ff; border-radius: 50%; }
+.submit-btn:focus-visible, .icon-btn:focus-visible { outline: 3px solid #8b5cf6; outline-offset: 2px; }
+@media (max-width: 760px) {
+  .main-layout { grid-template-columns: 1fr; height: auto; }
+  body { overflow: auto; }
+  .ai-meta-grid { grid-template-columns: 1fr; }
+}
+/* ============================================================
+   VISTA USUARIO + ADMINISTRADOR
+   Extensión del diseño actual
+============================================================ */
+
+/* ------------------------------------------------------------
+   BOTÓN DE CAMBIO DE VISTA
+   Temporal para desarrollo
+------------------------------------------------------------ */
+
+.role-switch {
+  border: 1px solid #e5e7eb;
+  background: #ffffff;
+  color: #6b21a8;
+  padding: 7px 12px;
+  border-radius: 9px;
+  font-size: 0.78rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.role-switch:hover {
+  background: #f8f5ff;
+  border-color: #8b5cf6;
+}
+
+
+/* ============================================================
+   ESTADOS DE LOS REPORTES
+============================================================ */
+
+.badge-status.status-pendiente {
+  background: #fef3c7;
+  color: #92400e;
+}
+
+.badge-status.status-en-revisión {
+  background: #dbeafe;
+  color: #1d4ed8;
+}
+
+.badge-status.status-en-proceso {
+  background: #ede9fe;
+  color: #6d28d9;
+}
+
+.badge-status.status-atendido {
+  background: #dcfce7;
+  color: #166534;
+}
+
+.admin-report-label {
+  display: block;
+  margin-top: 5px;
+  color: #94a3b8;
+  font-size: 0.72rem;
+}
+
+
+/* ============================================================
+   DASHBOARD ADMINISTRADOR
+============================================================ */
+
+.admin-dashboard {
+  flex: 1;
+  height: calc(100vh - 65px);
+  overflow-y: auto;
+  padding: 32px;
+  box-sizing: border-box;
+  background: #f8fafc;
+}
+
+.admin-header {
+  max-width: 1250px;
+  margin: 0 auto 26px;
+}
+
+.admin-header h1 {
+  margin: 0;
+  color: #1e293b;
+  font-size: 1.8rem;
+  font-weight: 700;
+}
+
+.admin-header p {
+  margin: 6px 0 0;
+  color: #64748b;
+  font-size: 0.95rem;
+}
+
+
+/* ============================================================
+   TARJETAS KPI
+============================================================ */
+
+.admin-kpis {
+  max-width: 1250px;
+  margin: 0 auto 24px;
+
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 14px;
+}
+
+.admin-kpi {
+  background: #ffffff;
+  border: 1px solid #e5e7eb;
+  border-radius: 14px;
+  padding: 18px;
+
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+
+  box-shadow: 0 5px 15px rgba(15, 23, 42, 0.035);
+}
+
+.admin-kpi span {
+  color: #64748b;
+  font-size: 0.78rem;
+  font-weight: 500;
+}
+
+.admin-kpi strong {
+  color: #6b21a8;
+  font-size: 1.65rem;
+}
+
+
+/* ============================================================
+   CONTENIDO PRINCIPAL ADMIN
+============================================================ */
+
+.admin-content {
+  max-width: 1250px;
+  margin: 0 auto;
+
+  display: grid;
+  grid-template-columns: minmax(300px, 0.85fr) minmax(420px, 1.4fr);
+  gap: 20px;
+
+  align-items: stretch;
+}
+
+.admin-report-list,
+.admin-detail {
+  background: #ffffff;
+  border: 1px solid #e5e7eb;
+  border-radius: 16px;
+  padding: 20px;
+  box-sizing: border-box;
+}
+
+.admin-report-list {
+  min-height: 500px;
+}
+
+.admin-detail {
+  min-height: 500px;
+}
+
+
+/* ============================================================
+   LISTA DE REPORTES ADMIN
+============================================================ */
+
+.admin-scroll {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+
+  margin-top: 18px;
+
+  max-height: 440px;
+  overflow-y: auto;
+  padding-right: 5px;
+}
+
+.admin-scroll .reporte-item-card {
+  background: #ffffff;
+}
+
+.admin-scroll .reporte-item-card:hover {
+  transform: translateY(-1px);
+}
+
+
+/* ============================================================
+   ESTADO VACÍO DEL PANEL
+============================================================ */
+
+.admin-empty {
+  min-height: 450px;
+
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+
+  text-align: center;
+  color: #94a3b8;
+}
+
+.admin-empty span {
+  width: 54px;
+  height: 54px;
+
+  display: flex;
+  justify-content: center;
+  align-items: center;
+
+  margin-bottom: 15px;
+
+  border-radius: 50%;
+  background: #f3e8ff;
+
+  color: #7e22ce;
+  font-size: 1.5rem;
+}
+
+.admin-empty h3 {
+  margin: 0 0 6px;
+  color: #334155;
+  font-size: 1rem;
+}
+
+.admin-empty p {
+  max-width: 300px;
+  margin: 0;
+  font-size: 0.85rem;
+  line-height: 1.5;
+}
+
+
+/* ============================================================
+   DETALLE DEL REPORTE
+============================================================ */
+
+.admin-detail-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 15px;
+
+  padding-bottom: 16px;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.admin-detail-header > div span {
+  color: #94a3b8;
+  font-size: 0.75rem;
+}
+
+.admin-detail-header h2 {
+  margin: 5px 0 0;
+  color: #1e293b;
+  font-size: 1.25rem;
+}
+
+
+/* ============================================================
+   IMAGEN DEL REPORTE
+============================================================ */
+
+.admin-image-container {
+  width: 100%;
+  height: 260px;
+
+  margin: 18px 0;
+
+  border-radius: 13px;
+  overflow: hidden;
+
+  background: #f1f5f9;
+  border: 1px solid #e2e8f0;
+
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.admin-image-container img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+
+/* ============================================================
+   INFORMACIÓN
+============================================================ */
+
+.admin-info {
+  margin: 16px 0;
+}
+
+.admin-info p {
+  margin: 8px 0;
+  color: #475569;
+  font-size: 0.9rem;
+  line-height: 1.55;
+}
+
+.admin-info strong {
+  color: #1e293b;
+}
+
+
+/* ============================================================
+   CONTROL DE ESTADO
+============================================================ */
+
+.admin-status-control {
+  margin-top: 18px;
+  padding-top: 18px;
+
+  border-top: 1px solid #e5e7eb;
+}
+
+.admin-status-control h4 {
+  margin: 0 0 12px;
+  color: #334155;
+  font-size: 0.9rem;
+}
+
+.status-buttons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.status-buttons button {
+  border: 1px solid #e2e8f0;
+  background: #ffffff;
+  color: #475569;
+
+  padding: 8px 12px;
+  border-radius: 8px;
+
+  font-size: 0.78rem;
+  font-weight: 600;
+
+  cursor: pointer;
+
+  transition:
+    background 0.2s ease,
+    border-color 0.2s ease,
+    color 0.2s ease;
+}
+
+.status-buttons button:hover {
+  background: #f3e8ff;
+  border-color: #8b5cf6;
+  color: #6b21a8;
+}
+
+
+/* ============================================================
+   PANEL DE IA
+============================================================ */
+
+.admin-detail .ai-analysis-box {
+  margin-top: 18px;
+}
+
+.admin-detail .ai-meta-grid {
+  grid-template-columns: repeat(3, 1fr);
+}
+
+
+/* ============================================================
+   SCROLLBAR
+============================================================ */
+
+.admin-scroll::-webkit-scrollbar,
+.sidebar-right::-webkit-scrollbar,
+.admin-dashboard::-webkit-scrollbar {
+  width: 5px;
+}
+
+.admin-scroll::-webkit-scrollbar-track,
+.sidebar-right::-webkit-scrollbar-track,
+.admin-dashboard::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.admin-scroll::-webkit-scrollbar-thumb,
+.sidebar-right::-webkit-scrollbar-thumb,
+.admin-dashboard::-webkit-scrollbar-thumb {
+  background: #d8dce5;
+  border-radius: 10px;
+}
+
+
+/* ============================================================
+   RESPONSIVE - TABLET
+============================================================ */
+
+@media (max-width: 1050px) {
+
+  .admin-kpis {
+    grid-template-columns: repeat(3, 1fr);
+  }
+
+  .admin-content {
+    grid-template-columns: 1fr;
+  }
+
+  .admin-report-list,
+  .admin-detail {
+    min-height: auto;
+  }
+
+  .admin-scroll {
+    max-height: 350px;
+  }
+
+}
+
+
+/* ============================================================
+   RESPONSIVE - CELULAR
+============================================================ */
+
+@media (max-width: 760px) {
+
+  body {
+    overflow-y: auto;
+  }
+
+  .navbar {
+    height: 60px;
+    padding: 0 14px;
+  }
+
+  .nav-right {
+    gap: 7px;
+  }
+
+  .role-switch {
+    padding: 6px 8px;
+    font-size: 0.68rem;
+  }
+
+  .user-name {
+    display: none;
+  }
+
+  .main-layout {
+    grid-template-columns: 1fr;
+    height: auto;
+  }
+
+  .chat-section {
+    min-height: calc(100vh - 60px);
+    padding: 25px 16px;
+    box-sizing: border-box;
+  }
+
+  .welcome-title {
+    font-size: 1.8rem;
+  }
+
+  .welcome-subtitle {
+    font-size: 0.95rem;
+    margin-bottom: 22px;
+  }
+
+  .input-card {
+    padding: 13px;
+  }
+
+  .input-actions-bar {
+    gap: 10px;
+  }
+
+  .actions-left {
+    flex-wrap: wrap;
+  }
+
+  .action-select,
+  .custom-file-upload {
+    font-size: 0.75rem;
+    padding: 6px 8px;
+  }
+
+  .sidebar-right {
+    border-left: none;
+    border-top: 1px solid #e5e7eb;
+    padding: 20px 16px;
+    max-height: none;
+  }
+
+  .sidebar-right .scroll-historial {
+    max-height: 300px;
+  }
+
+  /* ADMIN */
+
+  .admin-dashboard {
+    height: auto;
+    padding: 20px 14px 30px;
+  }
+
+  .admin-header h1 {
+    font-size: 1.45rem;
+  }
+
+  .admin-header p {
+    font-size: 0.85rem;
+  }
+
+  .admin-kpis {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 9px;
+  }
+
+  .admin-kpi {
+    padding: 14px;
+  }
+
+  .admin-kpi strong {
+    font-size: 1.35rem;
+  }
+
+  .admin-content {
+    grid-template-columns: 1fr;
+    gap: 14px;
+  }
+
+  .admin-report-list,
+  .admin-detail {
+    padding: 15px;
+    border-radius: 13px;
+  }
+
+  .admin-scroll {
+    max-height: 330px;
+  }
+
+  .admin-image-container {
+    height: 220px;
+  }
+
+  .admin-detail-header {
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .status-buttons {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .status-buttons button {
+    width: 100%;
+  }
+
+  .admin-detail .ai-meta-grid {
+    grid-template-columns: 1fr;
+  }
+
+}
+
+
+/* ============================================================
+   CELULAR PEQUEÑO
+============================================================ */
+
+@media (max-width: 420px) {
+
+  .welcome-title {
+    font-size: 1.55rem;
+  }
+
+  .welcome-subtitle {
+    font-size: 0.88rem;
+  }
+
+  .input-actions-bar {
+    align-items: flex-end;
+  }
+
+  .actions-left {
+    max-width: 75%;
+  }
+
+  .actions-right {
+    gap: 5px;
+  }
+
+  .admin-kpis {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .admin-kpi span {
+    font-size: 0.7rem;
+  }
+
+  .admin-kpi strong {
+    font-size: 1.2rem;
+  }
+
+  .admin-image-container {
+    height: 190px;
+  }
+
+}
+.titulo-input-field {
+  width: 100%;
+  border: none !important; /* Fuerza la eliminación del borde gris exterior */
+  border-bottom: 1px solid #f3f4f6 !important; /* Crea la línea divisoria sutil abajo */
+  background: transparent !important;
+  font-size: 1.05rem;
+  font-weight: 600;
+  color: #1f2937;
+  font-family: inherit;
+  padding: 8px 0 12px 0 !important;
+  margin-bottom: 12px;
+  outline: none !important; /* Evita el borde azul molesto al hacer clic */
+  box-sizing: border-box;
+}
+
+.titulo-input-field::placeholder {
+  color: #9ca3af;
+  font-weight: 400;
+}
+
+
+/* ============================================================
+   NUEVO INPUT DE TÍTULO DE LA PROBLEMÁTICA
+============================================================ */
+.titulo-input-field {
+  width: 100%;
+  border: none !important;
+  border-bottom: 1px solid #f3f4f6 !important; /* Línea divisoria muy suave */
+  background-color: transparent !important;
+  font-size: 1.05rem;
+  font-weight: 600; /* Hace que el título resalte sobre la descripción */
+  color: #1f2937;
+  font-family: inherit;
+  padding: 8px 0 12px 0 !important;
+  margin-bottom: 12px;
+  outline: none !important; /* Elimina el borde azul nativo al hacer clic */
+  box-sizing: border-box;
+}
+
+/* Color y peso del texto sugerido */
+.titulo-input-field::placeholder {
+  color: #9ca3af;
+  font-weight: 400;
+}
+/* ============================================================
+   CONTENEDOR DE PESTAÑAS DE ROLES (SEGMENTED CONTROL)
+============================================================ */
+.role-selector-container {
+  display: flex;
+  gap: 5px;
+  background-color: #f3f4f6; /* Fondo gris claro atenuado */
+  padding: 4px;
+  border-radius: 8px;
+  border: 1px solid #e5e7eb;
+}
+
+/* Estilo base para cada pestaña */
+.role-tab-btn {
+  padding: 6px 12px;
+  border-radius: 6px;
+  border: none;
+  cursor: pointer;
+  font-weight: 600;
+  font-size: 0.9rem;
+  font-family: inherit;
+  background-color: transparent;
+  color: #6b7280;
+  transition: all 0.2s ease;
+}
+
+/* Efecto al pasar el cursor */
+.role-tab-btn:hover {
+  color: #1f2937;
+}
+
+/* Pestaña activa (La que está seleccionada actualmente) */
+.role-tab-btn.active {
+  background-color: #ffffff;
+  color: #1f2937;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.08);
+}
+/* ============================================================
+   BOTÓN DE CANCELACIÓN DENTRO DEL MODAL
+============================================================ */
+.modal-btn-cancel {
+  background-color: #dc3545; /* Rojo semántico de destrucción/cancelación */
+  color: #ffffff;
+  border: none;
+  padding: 10px 16px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: bold;
+  font-family: inherit;
+  font-size: 0.95rem;
+  transition: background-color 0.2s ease;
+}
+
+/* Efecto hover para feedback visual */
+.modal-btn-cancel:hover {
+  background-color: #c82333;
+}
+
+/* Etiqueta de texto si el reporte ya fue cancelado previamente */
+.modal-status-canceled-label {
+  color: #dc3545;
+  font-weight: bold;
+  font-size: 0.95rem;
+  align-self: center;
 }
