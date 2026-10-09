@@ -1,1175 +1,805 @@
 /* frontend/src/App.css */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@500&display=swap');
 
-/* Configuración global de pantalla */
-#root {
-  width: 100%;
-  height: 100vh;
+:root {
+  --bg-main: #f8fafc;
+  --bg-card: #ffffff;
+  --border-subtle: #e2e8f0;
+  --border-strong: #cbd5e1;
+  --text-dark: #0f172a;
+  --text-muted: #475569;
+  --text-light: #94a3b8;
+  --primary-blue: #2563eb;
+  --primary-hover: #1d4ed8;
+}
+
+* {
+  box-sizing: border-box;
   margin: 0;
   padding: 0;
 }
 
 body {
- margin: 0;
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI",
-    Roboto, Helvetica, Arial, sans-serif;
-  background: radial-gradient(
-    circle at 30% 50%,
-    #f1f3f9 0%,
-    #fdfbfd 100%
-  );
-  color: #333333;
-  overflow-x: hidden;
-  overflow-y: auto;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  background-color: var(--bg-main);
+  color: var(--text-dark);
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
 }
 
 .app-wrapper {
+  min-height: 100vh;
   display: flex;
   flex-direction: column;
-  height: 100vh;
 }
 
-/* 1. ESTILOS DE LA BARRA SUPERIOR */
+/* NAVBAR */
 .navbar {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  height: 65px;
+  height: 56px;
+  background: #ffffff;
+  border-bottom: 1px solid var(--border-subtle);
   padding: 0 24px;
-  background-color: #ffffff;
-  border-bottom: 2px solid #8b5cf6; /* Línea de acento violeta superior */
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  position: sticky;
+  top: 0;
+  z-index: 40;
 }
 
-.logo-box {
-  width: 32px;
-  height: 32px;
-  background-color: #9d174d; /* Color guinda/púrpura del logo de la imagen */
-  border-radius: 8px;
+.nav-brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
 }
 
-.nav-right {
+.brand-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background-color: var(--primary-blue);
+}
+
+.brand-name {
+  font-weight: 700;
+  font-size: 0.95rem;
+  letter-spacing: -0.01em;
+}
+
+.nav-controls {
   display: flex;
   align-items: center;
   gap: 12px;
 }
 
-.user-name {
-  font-size: 0.9rem;
+.role-switch {
+  display: flex;
+  background: #f1f5f9;
+  padding: 3px;
+  border-radius: 8px;
+  border: 1px solid var(--border-subtle);
+}
+
+.role-btn {
+  border: none;
+  background: transparent;
+  padding: 4px 12px;
+  font-size: 0.75rem;
   font-weight: 500;
-  color: #6b7280;
-  background-color: #f3f4f6;
-  padding: 4px 16px;
-  border-radius: 20px;
-  letter-spacing: 2px;
+  color: var(--text-muted);
+  cursor: pointer;
+  border-radius: 6px;
+  transition: all 0.15s ease;
+}
+
+.role-btn.active {
+  background: #ffffff;
+  color: var(--text-dark);
+  font-weight: 600;
+  box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+}
+
+.role-label {
+  font-size: 0.75rem;
+  color: var(--text-muted);
 }
 
 .avatar {
-  width: 36px;
-  height: 36px;
-  background-color: #e05638; /* Círculo naranja del perfil */
-  border-radius: 50%;
-}
-
-/* DISTRIBUCIÓN DEL ESPACIO DE TRABAJO (GRID) */
-.main-layout {
-  display: grid;
-  grid-template-columns: 1fr 320px; /* Divide el chat de la barra derecha */
-  flex: 1;
-  height: calc(100vh - 65px);
-}
-
-/* 2. SECCIÓN CENTRAL DEL CHAT */
-.chat-section {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  padding: 40px;
-  overflow-y: auto;
-}
-
-.welcome-container {
-  width: 100%;
-  max-width: 680px;
-  text-align: center;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-}
-
-.welcome-title {
-  color: #6b21a8; /* Tono morado idéntico al de la imagen */
-  font-size: 2.2rem;
-  font-weight: 700;
-  margin: 0 0 24px 0;
-}
-
-.welcome-subtitle {
-  color: #6b7280;
-  font-size: 1.15rem;
-  line-height: 1.6;
-  max-width: 500px;
-  margin: 0 0 32px 0;
-}
-
-/* TARJETA DE ENTRADA (INPUT COMPONENT) */
-
-
-/* ============================================================
-   TARJETA DE ENTRADA (INPUT COMPONENT) - REDISEÑO UI/UX
-============================================================ */
-
-.input-card {
-  width: 100%;
-  background-color: #ffffff;
-  border-radius: 16px;
-  padding: 18px 20px; /* Aumentamos ligeramente el aire interno para mayor elegancia */
-  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.04);
-  border: 1px solid #e5e7eb;
-  box-sizing: border-box;
-  display: flex;
-  flex-direction: column;
-}
-
-/* NUEVO: Estilizado minimalista para el título */
-.input-card input[type="text"] {
-  width: 100%;
-  border: none;
-  outline: none;
-  background: transparent;
-  font-size: 1.05rem; /* Un toque más grande que la descripción para jerarquía */
-  font-weight: 600;    /* Peso tipográfico semibold para destacar */
-  color: #1f2937;      /* Mismo color base que tu textarea */
-  font-family: inherit;
-  padding: 0 0 12px 0; /* Espacio inferior antes de la línea divisoria */
-  margin-bottom: 12px; /* Margen para separar del textarea */
-  border-bottom: 1px solid #f3f4f6; /* Línea divisoria sumamente sutil (#e5e7eb atenuado) */
-}
-
-/* Modificamos el placeholder del título para que sea sutil */
-.input-card input[type="text"]::placeholder {
-  color: #9ca3af;
-  font-weight: 400; /* El texto sugerido no debe ser bold */
-}
-
-/* Tu textarea original adaptado sin márgenes toscos */
-.input-card textarea {
-  width: 100%;
-  border: none;
-  resize: none;
-  outline: none;
-  font-size: 1rem;
-  color: #4b5563; /* Cambiado sutilmente a un gris más suave para dar jerarquía visual */
-  font-family: inherit;
-  margin-bottom: 12px;
-  background: transparent;
-  padding: 4px 0;
-}
-
-.input-card textarea::placeholder {
-  color: #9ca3af;
-}
-
-
-.actions-left {
-  display: flex;
-  gap: 8px;
-}
-
-.action-select {
-  background-color: #f3f4f6;
-  border: 1px solid #e5e7eb;
-  padding: 6px 12px;
-  border-radius: 8px;
-  font-size: 0.85rem;
-  color: #4b5563;
-  outline: none;
-  cursor: pointer;
-}
-
-.actions-right {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-}
-
-.icon-btn {
-  background: none;
-  border: none;
-  font-size: 1.2rem;
-  cursor: pointer;
-  padding: 4px;
-}
-
-.submit-btn {
-  background-color: #701a75; /* Círculo morado oscuro para enviar */
-  color: #ffffff;
-  border: none;
   width: 32px;
   height: 32px;
   border-radius: 50%;
+  background: #f1f5f9;
+  border: 1px solid var(--border-subtle);
   display: flex;
-  justify-content: center;
   align-items: center;
-  cursor: pointer;
-  font-weight: bold;
-  transition: transform 0.1s ease;
-}
-
-.submit-btn:hover {
-  transform: scale(1.05);
-}
-
-.disclaimer-text {
+  justify-content: center;
   font-size: 0.75rem;
-  color: #9ca3af;
-  margin-top: 12px;
-}
-
-.quick-start {
-  margin-top: 40px;
-  font-size: 0.9rem;
-  color: #9ca3af;
-}
-
-/* 3. ESTILOS DE LA BARRA LATERAL DERECHA (SIDEBAR) */
-.sidebar-right {
-  background-color: #ffffff;
-  border-left: 1px solid #e5e7eb;
-  padding: 24px;
-  display: flex;
-  flex-direction: column;
-  justify-content: space-between;
-}
-
-/* Rectángulos grises simulados de la referencia */
-.sidebar-block-top {
-  width: 100%;
-  height: 140px;
-  background-color: #e5e7eb;
-  border-radius: 4px;
-}
-
-.sidebar-block-bottom {
-  width: 100%;
-  height: 40px;
-  background-color: #e5e7eb;
-  border-radius: 4px;
-}
-
-
-/* Estilos para el botón personalizado de subir archivo */
-.custom-file-upload {
-  cursor: pointer;
-  display: inline-block;
-  background-color: #f1f5f9;
-  border: 1px solid #cbd5e1;
-  padding: 6px 12px;
-  border-radius: 6px;
-  font-size: 0.85rem;
-  color: #334155;
-  transition: background-color 0.2s;
-}
-
-.custom-file-upload:hover {
-  background-color: #e2e8f0;
-}
-
-/* Contenedor de previsualización en el cuadro del chat */
-.preview-input-container {
-  position: relative;
-  display: inline-block;
-  margin: 10px 15px;
-}
-
-.preview-input-img {
-  width: 70px;
-  height: 70px;
-  object-fit: cover;
-  border-radius: 8px;
-  border: 2px solid #cbd5e1;
-}
-
-.btn-remove-preview {
-  position: absolute;
-  top: -6px;
-  right: -6px;
-  background-color: #ef4444;
-  color: white;
-  border: none;
-  border-radius: 50%;
-  width: 18px;
-  height: 18px;
-  font-size: 0.7rem;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-/* Alineación de la tarjeta con miniatura en el sidebar */
-.reporte-card-content-layout {
-  display: flex;
-  gap: 10px;
-  align-items: center;
-}
-
-.sidebar-report-thumb {
-  width: 50px;
-  height: 50px;
-  object-fit: cover;
-  border-radius: 6px;
-  border: 1px solid #e2e8f0;
-}
-
-.reporte-card-text {
-  flex: 1;
-  min-width: 0; /* Evita que el texto rompa el flexbox */
-}
-
-/* Contenedor e imagen dentro del Modal */
-.modal-image-container {
-  width: 100%;
-  max-height: 220px;
-  overflow: hidden;
-  border-radius: 8px;
-  margin-bottom: 15px;
-  border: 1px solid #e2e8f0;
-  display: flex;
-  justify-content: center;
-  background-color: #f8fafc;
-}
-
-.modal-report-img {
-  width: 100%;
-  height: auto;
-  object-fit: contain;
-}
-/* Espaciados internos para los bloques del sidebar */
-.sidebar-block-top, .sidebar-block-bottom {
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-  margin-bottom: 10px;
-}
-
-.sidebar-block-top h3, .sidebar-block-bottom h3 {
-  margin: 0;
-  font-size: 1rem;
-  color: #1e293b;
-  font-weight: 600;
-  padding-bottom: 4px;
-  border-bottom: 1px solid #e2e8f0;
-}
-
-/* Contenedor con scroll interno para la lista de abajo */
-.scroll-historial {
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-  max-height: 45vh; /* Limita la altura para que no rompa el diseño */
-  overflow-y: auto;
-  padding-right: 4px;
-}
-
-.sidebar-empty-text {
-  font-size: 0.8rem;
-  color: #94a3b8;
-  font-style: italic;
-  margin: 5px 0;
-}
-
-/* Animación sutil de parpadeo verde para indicar que es nuevo */
-.reciente-animacion {
-  border-color: #10b981 !important;
-  box-shadow: 0 0 8px rgba(16, 185, 129, 0.2);
-}
-/* Contenedor con scroll interno para el historial de abajo */
-.scroll-historial {
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-  max-height: 48vh; /* Limita la altura para no romper el layout general */
-  overflow-y: auto;
-  padding-right: 4px;
-}
-
-.sidebar-empty-text {
-  font-size: 0.85rem;
-  color: #94a3b8;
-  font-style: italic;
-  margin: 8px 0;
-}
-
-.sidebar-divider {
-  height: 1px;
-  background-color: #e2e8f0;
-  margin: 10px 0;
-}
-/* Solo agrega estilos que tu App.css no trae. No modifica ninguna de sus reglas.
-   No usa .sidebar-block-top / .sidebar-block-bottom (en tu CSS son rectángulos grises de altura fija). */
-
-/* Barra lateral de dos secciones */
-.sidebar-right { overflow-y: auto; justify-content: flex-start; gap: 4px; }
-.sidebar-section { display: flex; flex-direction: column; gap: 12px; min-height: 0; }
-.sidebar-section-head { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; border-bottom: 1px solid #e2e8f0; padding-bottom: 4px; }
-.sidebar-section-head h3 { margin: 0; font-size: 1rem; font-weight: 600; color: #1e293b; }
-.sidebar-section-head span { font-size: .72rem; color: #6b7280; text-align: right; }
-.sidebar-right .scroll-historial { max-height: 26vh; }
-
-/* Tarjetas de reporte */
-.reporte-item-card { background: #fff; border: 1px solid #e5e7eb; border-radius: 12px; padding: 12px 14px; cursor: pointer; transition: border-color .15s; }
-.reporte-item-card:hover { border-color: #8b5cf6; }
-.reporte-item-card:focus-visible { outline: 3px solid #8b5cf6; outline-offset: 2px; }
-.reporte-card-header { display: flex; justify-content: space-between; align-items: flex-start; gap: 8px; }
-.reporte-card-header h4 { margin: 0; font-size: .95rem; font-weight: 600; color: #111827; }
-.reporte-card-location { margin: 4px 0 0; font-size: .85rem; color: #6b7280; }
-
-/* Etiquetas de estado */
-.badge-status { padding: 2px 10px; border-radius: 999px; font-size: .75rem; font-weight: 700; white-space: nowrap; }
-.badge-status.pendiente { background: #fdeab0; color: #7a5800; }
-.badge-status.proceso { background: #dbe7ff; color: #1e429f; }
-
-/* Ventana emergente */
-.modal-overlay { position: fixed; inset: 0; background: rgba(15, 23, 42, .55); display: flex; justify-content: center; align-items: center; padding: 16px; z-index: 50; }
-.modal-container { background: #fff; border-radius: 16px; width: min(560px, 100%); max-height: 90vh; overflow-y: auto; box-shadow: 0 20px 50px rgba(0, 0, 0, .25); }
-.modal-header { display: flex; justify-content: space-between; align-items: center; padding: 16px 20px; border-bottom: 1px solid #e5e7eb; }
-.modal-header h2 { margin: 0; font-size: 1.1rem; color: #6b21a8; }
-.modal-close-x { background: none; border: 0; font-size: 1.1rem; cursor: pointer; color: #6b7280; }
-.modal-body { padding: 16px 20px; }
-.modal-body h3 { margin: 0 0 12px; }
-.modal-body p { margin: 8px 0; }
-.modal-status-highlight { background: #f3e8ff; color: #581c87; padding: 10px 14px; border-radius: 10px; margin: 14px 0; }
-.ai-analysis-box { background: #f8fafc; border: 1px solid #e2e8f0; border-left: 4px solid #8b5cf6; border-radius: 10px; padding: 14px; }
-.ai-analysis-box h4 { margin: 0 0 10px; color: #6b21a8; }
-.ai-meta-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; font-size: .88rem; }
-.ai-summary { font-size: .92rem; }
-.ai-recommendation-alert { background: #fff7e0; border-radius: 8px; padding: 10px 12px; font-size: .9rem; margin-top: 8px; }
-.modal-footer { padding: 12px 20px 18px; display: flex; justify-content: flex-end; }
-.modal-btn-confirm { background: #701a75; color: #fff; border: 0; border-radius: 10px; padding: 8px 20px; font-weight: 600; cursor: pointer; }
-
-/* Mensajes y estados del formulario */
-.field-error { color: #b3261e; font-size: .85rem; margin: 0 0 8px; text-align: left; }
-.voice-btn.escuchando { background: #f3e8ff; border-radius: 50%; }
-.submit-btn:focus-visible, .icon-btn:focus-visible { outline: 3px solid #8b5cf6; outline-offset: 2px; }
-@media (max-width: 760px) {
-  .main-layout { grid-template-columns: 1fr; height: auto; }
-  body { overflow: auto; }
-  .ai-meta-grid { grid-template-columns: 1fr; }
-}
-/* ============================================================
-   VISTA USUARIO + ADMINISTRADOR
-   Extensión del diseño actual
-============================================================ */
-
-/* ------------------------------------------------------------
-   BOTÓN DE CAMBIO DE VISTA
-   Temporal para desarrollo
------------------------------------------------------------- */
-
-.role-switch {
-  border: 1px solid #e5e7eb;
-  background: #ffffff;
-  color: #6b21a8;
-  padding: 7px 12px;
-  border-radius: 9px;
-  font-size: 0.78rem;
-  font-weight: 600;
-  cursor: pointer;
-  transition: all 0.2s ease;
-}
-
-.role-switch:hover {
-  background: #f8f5ff;
-  border-color: #8b5cf6;
-}
-
-
-/* ============================================================
-   ESTADOS DE LOS REPORTES
-============================================================ */
-
-.badge-status.status-pendiente {
-  background: #fef3c7;
-  color: #92400e;
-}
-
-.badge-status.status-en-revisión {
-  background: #dbeafe;
-  color: #1d4ed8;
-}
-
-.badge-status.status-en-proceso {
-  background: #ede9fe;
-  color: #6d28d9;
-}
-
-.badge-status.status-atendido {
-  background: #dcfce7;
-  color: #166534;
-}
-
-.admin-report-label {
-  display: block;
-  margin-top: 5px;
-  color: #94a3b8;
-  font-size: 0.72rem;
-}
-
-
-/* ============================================================
-   DASHBOARD ADMINISTRADOR
-============================================================ */
-
-.admin-dashboard {
-  flex: 1;
-  height: calc(100vh - 65px);
-  overflow-y: auto;
-  padding: 32px;
-  box-sizing: border-box;
-  background: #f8fafc;
-}
-
-.admin-header {
-  max-width: 1250px;
-  margin: 0 auto 26px;
-}
-
-.admin-header h1 {
-  margin: 0;
-  color: #1e293b;
-  font-size: 1.8rem;
   font-weight: 700;
 }
 
-.admin-header p {
-  margin: 6px 0 0;
-  color: #64748b;
-  font-size: 0.95rem;
-}
-
-
-/* ============================================================
-   TARJETAS KPI
-============================================================ */
-
-.admin-kpis {
-  max-width: 1250px;
-  margin: 0 auto 24px;
-
-  display: grid;
-  grid-template-columns: repeat(5, 1fr);
-  gap: 14px;
-}
-
-.admin-kpi {
-  background: #ffffff;
-  border: 1px solid #e5e7eb;
-  border-radius: 14px;
-  padding: 18px;
-
-  display: flex;
-  flex-direction: column;
-  gap: 7px;
-
-  box-shadow: 0 5px 15px rgba(15, 23, 42, 0.035);
-}
-
-.admin-kpi span {
-  color: #64748b;
-  font-size: 0.78rem;
-  font-weight: 500;
-}
-
-.admin-kpi strong {
-  color: #6b21a8;
-  font-size: 1.65rem;
-}
-
-
-/* ============================================================
-   CONTENIDO PRINCIPAL ADMIN
-============================================================ */
-
-.admin-content {
-  max-width: 1250px;
+/* CONTENEDOR PRINCIPAL CON MAX-WIDTH CENTRADO */
+.content-container {
+  width: 100%;
+  max-width: 1100px;
   margin: 0 auto;
+  padding: 40px 24px;
+}
 
+/* GRID ASIMÉTRICO (7/5) */
+.layout-grid {
   display: grid;
-  grid-template-columns: minmax(300px, 0.85fr) minmax(420px, 1.4fr);
+  grid-template-columns: 1fr;
+  gap: 32px;
+}
+
+@media (min-width: 768px) {
+  .layout-grid {
+    grid-template-columns: 7fr 5fr;
+    gap: 48px;
+  }
+}
+
+/* ENCABEZADOS */
+.section-title-box {
+  margin-bottom: 24px;
+}
+
+.kicker-badge {
+  font-size: 0.65rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  color: var(--text-light);
+  text-transform: uppercase;
+}
+
+.main-heading {
+  font-size: 1.75rem;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  margin-top: 4px;
+}
+
+.main-subheading {
+  font-size: 0.88rem;
+  color: var(--text-muted);
+  margin-top: 4px;
+}
+
+/* FORMULARIO */
+.form-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border-subtle);
+  border-radius: 12px;
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
   gap: 20px;
-
-  align-items: stretch;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.03);
 }
 
-.admin-report-list,
-.admin-detail {
-  background: #ffffff;
-  border: 1px solid #e5e7eb;
-  border-radius: 16px;
-  padding: 20px;
-  box-sizing: border-box;
-}
-
-.admin-report-list {
-  min-height: 500px;
-}
-
-.admin-detail {
-  min-height: 500px;
-}
-
-
-/* ============================================================
-   LISTA DE REPORTES ADMIN
-============================================================ */
-
-.admin-scroll {
+.input-group {
   display: flex;
   flex-direction: column;
-  gap: 10px;
-
-  margin-top: 18px;
-
-  max-height: 440px;
-  overflow-y: auto;
-  padding-right: 5px;
+  gap: 6px;
 }
 
-.admin-scroll .reporte-item-card {
+.field-label {
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--text-dark);
+}
+
+.text-input,
+.textarea-input {
+  width: 100%;
+  padding: 10px 14px;
+  background-color: #f8fafc;
+  border: 1px solid var(--border-subtle);
+  border-radius: 8px;
+  font-size: 0.88rem;
+  color: var(--text-dark);
+  font-family: inherit;
+  outline: none;
+  transition: all 0.15s ease;
+}
+
+.text-input:focus,
+.textarea-input:focus {
+  background-color: #ffffff;
+  border-color: var(--primary-blue);
+  box-shadow: 0 0 0 1px var(--primary-blue);
+}
+
+.textarea-input {
+  resize: vertical;
+  min-height: 110px;
+}
+
+.error-banner {
+  font-size: 0.8rem;
+  color: #e11d48;
+  background: #fff1f2;
+  padding: 10px 12px;
+  border-radius: 8px;
+  border: 1px solid #fecdd3;
+}
+
+/* ACCIONES (BOTONES E ÍCONOS VECTORIALES) */
+.form-actions-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding-top: 8px;
+}
+
+.left-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.hidden-file-input {
+  display: none;
+}
+
+.btn-secondary {
+  height: 40px;
+  padding: 0 14px;
+  border: 1px solid var(--border-subtle);
+  border-radius: 8px;
   background: #ffffff;
-}
-
-.admin-scroll .reporte-item-card:hover {
-  transform: translateY(-1px);
-}
-
-
-/* ============================================================
-   ESTADO VACÍO DEL PANEL
-============================================================ */
-
-.admin-empty {
-  min-height: 450px;
-
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  align-items: center;
-
-  text-align: center;
-  color: #94a3b8;
-}
-
-.admin-empty span {
-  width: 54px;
-  height: 54px;
-
-  display: flex;
-  justify-content: center;
-  align-items: center;
-
-  margin-bottom: 15px;
-
-  border-radius: 50%;
-  background: #f3e8ff;
-
-  color: #7e22ce;
-  font-size: 1.5rem;
-}
-
-.admin-empty h3 {
-  margin: 0 0 6px;
   color: #334155;
-  font-size: 1rem;
+  font-size: 0.82rem;
+  font-weight: 500;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  transition: all 0.15s ease;
 }
 
-.admin-empty p {
-  max-width: 300px;
-  margin: 0;
-  font-size: 0.85rem;
-  line-height: 1.5;
+.btn-secondary:hover {
+  background: #f8fafc;
+  border-color: var(--border-strong);
+  color: var(--text-dark);
 }
 
+.btn-icon {
+  width: 40px;
+  height: 40px;
+  border: 1px solid var(--border-subtle);
+  border-radius: 8px;
+  background: #ffffff;
+  color: #334155;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
 
-/* ============================================================
-   DETALLE DEL REPORTE
-============================================================ */
+.btn-icon:hover {
+  background: #f8fafc;
+  border-color: var(--border-strong);
+  color: var(--text-dark);
+}
 
-.admin-detail-header {
+.btn-icon.mic-active {
+  background: #eff6ff;
+  border-color: var(--primary-blue);
+  color: var(--primary-blue);
+}
+
+.btn-primary {
+  height: 40px;
+  padding: 0 18px;
+  background: var(--primary-blue);
+  color: #ffffff;
+  border: none;
+  border-radius: 8px;
+  font-size: 0.82rem;
+  font-weight: 600;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  transition: background 0.15s ease;
+}
+
+.btn-primary:hover {
+  background: var(--primary-hover);
+}
+
+/* ÍCONOS SVG VECTORIALES */
+.btn-svg-icon {
+  width: 16px;
+  height: 16px;
+  flex-shrink: 0;
+}
+
+.btn-svg-arrow {
+  width: 15px;
+  height: 15px;
+  flex-shrink: 0;
+}
+
+.svg-inline-icon {
+  width: 13px;
+  height: 13px;
+  display: inline-block;
+  margin-right: 4px;
+  vertical-align: -1px;
+  stroke: var(--text-muted);
+}
+
+.footer-disclaimer {
+  font-size: 0.75rem;
+  color: var(--text-light);
+  margin-top: 24px;
+  display: block;
+}
+
+/* PREVISUALIZACIÓN DE IMAGEN */
+.preview-container {
+  position: relative;
+  display: inline-block;
+}
+
+.preview-img {
+  width: 64px;
+  height: 64px;
+  object-fit: cover;
+  border-radius: 8px;
+  border: 1px solid var(--border-subtle);
+}
+
+.remove-preview-btn {
+  position: absolute;
+  top: -6px;
+  right: -6px;
+  background: var(--text-dark);
+  color: white;
+  border: none;
+  border-radius: 50%;
+  width: 20px;
+  height: 20px;
+  font-size: 10px;
+  cursor: pointer;
+}
+
+/* HISTORIAL (COLUMNA DERECHA) */
+.history-column {
+  display: flex;
+  flex-direction: column;
+}
+
+@media (min-width: 768px) {
+  .history-column {
+    border-left: 1px solid var(--border-subtle);
+    padding-left: 32px;
+  }
+}
+
+.history-header {
+  border-bottom: 1px solid var(--border-subtle);
+  padding-bottom: 12px;
+  margin-bottom: 16px;
+}
+
+.history-header h3 {
+  font-size: 1.1rem;
+  font-weight: 600;
+}
+
+.history-header span {
+  font-size: 0.78rem;
+  color: var(--text-muted);
+}
+
+.empty-history-text {
+  font-size: 0.82rem;
+  color: var(--text-light);
+  font-style: italic;
+  padding: 12px 0;
+}
+
+.reporte-fila {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding-bottom: 16px;
+  margin-bottom: 16px;
+  border-bottom: 1px solid var(--border-subtle);
+  cursor: pointer;
+  transition: opacity 0.15s ease;
+}
+
+.reporte-fila:hover {
+  opacity: 0.85;
+}
+
+.reporte-thumb {
+  width: 44px;
+  height: 44px;
+  object-fit: cover;
+  border-radius: 6px;
+  border: 1px solid var(--border-subtle);
+}
+
+.reporte-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.reporte-header-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px;
+}
+
+.reporte-titulo {
+  font-size: 0.88rem;
+  font-weight: 600;
+  color: var(--text-dark);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.folio-mono {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.72rem;
+  color: var(--text-muted);
+  background: #f1f5f9;
+  padding: 2px 6px;
+  border-radius: 4px;
+}
+
+.badge-wrapper {
+  margin-top: 6px;
+}
+
+.badge-status {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 2px 8px;
+  border-radius: 999px;
+  font-size: 0.68rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  border: 1px solid transparent;
+}
+
+.badge-pendiente { background: #fffbeb; color: #b45309; border-color: #fde68a; }
+.badge-proceso   { background: #eff6ff; color: #1d4ed8; border-color: #bfdbfe; }
+.badge-atendido  { background: #f0fdf4; color: #15803d; border-color: #bbf7d0; }
+.badge-cancelado { background: #fff1f2; color: #e11d48; border-color: #fecdd3; }
+
+.status-led {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+}
+
+.led-green { background-color: #16a34a; }
+.led-blue  { background-color: #2563eb; }
+.led-amber { background-color: #d97706; }
+.led-coral { background-color: #e11d48; }
+
+.reporte-ubicacion {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  margin-top: 6px;
+}
+
+.admin-report-label {
+  font-size: 0.7rem;
+  color: var(--text-light);
+  display: block;
+  margin-top: 4px;
+}
+
+/* DASHBOARD ADMIN Y KPIS */
+.kpis-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 12px;
+  margin-bottom: 24px;
+}
+
+@media (min-width: 640px) {
+  .kpis-grid {
+    grid-template-columns: repeat(5, 1fr);
+  }
+}
+
+.kpi-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border-subtle);
+  padding: 16px;
+  border-radius: 10px;
+  display: flex;
+  flex-direction: column;
+}
+
+.kpi-card span { font-size: 0.75rem; color: var(--text-muted); }
+.kpi-card strong { font-size: 1.25rem; font-weight: 700; margin-top: 4px; }
+
+.text-amber { color: #d97706; }
+.text-blue { color: #2563eb; }
+.text-indigo { color: #4f46e5; }
+.text-green { color: #16a34a; }
+
+.admin-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 24px;
+}
+
+@media (min-width: 768px) {
+  .admin-grid {
+    grid-template-columns: 5fr 7fr;
+  }
+}
+
+.admin-list-card, .admin-detail-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border-subtle);
+  border-radius: 12px;
+  padding: 20px;
+}
+
+.admin-card-header {
+  border-bottom: 1px solid var(--border-subtle);
+  padding-bottom: 10px;
+  margin-bottom: 16px;
+}
+
+.admin-card-header h3 { font-size: 0.95rem; font-weight: 600; }
+.admin-card-header span { font-size: 0.75rem; color: var(--text-muted); }
+
+.admin-scroll-container {
+  max-height: 480px;
+  overflow-y: auto;
+}
+
+.empty-detail {
+  min-height: 300px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  color: var(--text-muted);
+}
+
+.empty-svg-icon {
+  width: 36px;
+  height: 36px;
+  margin-bottom: 8px;
+  stroke: var(--text-light);
+}
+
+.detail-header {
   display: flex;
   justify-content: space-between;
   align-items: flex-start;
-  gap: 15px;
-
-  padding-bottom: 16px;
-  border-bottom: 1px solid #e5e7eb;
+  border-bottom: 1px solid var(--border-subtle);
+  padding-bottom: 12px;
+  margin-bottom: 16px;
 }
 
-.admin-detail-header > div span {
-  color: #94a3b8;
-  font-size: 0.75rem;
-}
+.detail-header h2 { font-size: 1.1rem; font-weight: 700; }
 
-.admin-detail-header h2 {
-  margin: 5px 0 0;
-  color: #1e293b;
-  font-size: 1.25rem;
-}
-
-
-/* ============================================================
-   IMAGEN DEL REPORTE
-============================================================ */
-
-.admin-image-container {
-  width: 100%;
-  height: 260px;
-
-  margin: 18px 0;
-
-  border-radius: 13px;
-  overflow: hidden;
-
+.badge-admin {
+  font-size: 0.7rem;
+  font-weight: 600;
+  text-transform: uppercase;
   background: #f1f5f9;
-  border: 1px solid #e2e8f0;
-
-  display: flex;
-  justify-content: center;
-  align-items: center;
+  padding: 4px 10px;
+  border-radius: 99px;
 }
 
-.admin-image-container img {
+.detail-img-box {
+  width: 100%;
+  height: 180px;
+  border-radius: 8px;
+  overflow: hidden;
+  border: 1px solid var(--border-subtle);
+  margin-bottom: 16px;
+}
+
+.detail-img-box img {
   width: 100%;
   height: 100%;
   object-fit: cover;
 }
 
-
-/* ============================================================
-   INFORMACIÓN
-============================================================ */
-
-.admin-info {
-  margin: 16px 0;
-}
-
-.admin-info p {
-  margin: 8px 0;
-  color: #475569;
-  font-size: 0.9rem;
-  line-height: 1.55;
-}
-
-.admin-info strong {
-  color: #1e293b;
-}
-
-
-/* ============================================================
-   CONTROL DE ESTADO
-============================================================ */
-
-.admin-status-control {
-  margin-top: 18px;
-  padding-top: 18px;
-
-  border-top: 1px solid #e5e7eb;
-}
-
-.admin-status-control h4 {
-  margin: 0 0 12px;
-  color: #334155;
-  font-size: 0.9rem;
-}
-
-.status-buttons {
+.detail-info {
+  font-size: 0.82rem;
+  margin-bottom: 16px;
   display: flex;
-  flex-wrap: wrap;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.ai-box {
+  background: #f8fafc;
+  border: 1px solid var(--border-subtle);
+  border-radius: 8px;
+  padding: 14px;
+  font-size: 0.8rem;
+  display: flex;
+  flex-direction: column;
   gap: 8px;
 }
 
-.status-buttons button {
-  border: 1px solid #e2e8f0;
+.ai-box h4 { font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.05em; }
+
+.ai-meta {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+}
+
+.ai-rec {
   background: #ffffff;
-  color: #475569;
+  border: 1px solid var(--border-subtle);
+  padding: 8px 10px;
+  border-radius: 6px;
+}
 
-  padding: 8px 12px;
+.status-control-box {
+  margin-top: 16px;
+  padding-top: 16px;
+  border-top: 1px solid var(--border-subtle);
+}
+
+.status-control-box h4 { font-size: 0.8rem; font-weight: 600; margin-bottom: 10px; }
+
+.status-btn-group {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.status-btn-group button {
+  padding: 6px 12px;
+  border: 1px solid var(--border-subtle);
+  background: #ffffff;
+  border-radius: 6px;
+  font-size: 0.75rem;
+  font-weight: 500;
+  cursor: pointer;
+}
+
+.status-btn-group button:hover {
+  background: #f8fafc;
+  border-color: var(--text-dark);
+}
+
+/* MODAL */
+.modal-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(15, 23, 42, 0.4);
+  backdrop-filter: blur(2px);
+  z-index: 50;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+}
+
+.modal-box {
+  background: #ffffff;
+  border-radius: 12px;
+  border: 1px solid var(--border-subtle);
+  width: 100%;
+  max-width: 500px;
+  max-height: 85vh;
+  overflow-y: auto;
+  box-shadow: 0 20px 25px -5px rgba(0,0,0,0.1);
+}
+
+.modal-head {
+  padding: 14px 18px;
+  border-bottom: 1px solid var(--border-subtle);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.modal-head h2 { font-size: 0.9rem; font-weight: 600; }
+
+.close-x {
+  background: none;
+  border: none;
+  font-size: 1rem;
+  cursor: pointer;
+  color: var(--text-muted);
+}
+
+.modal-body {
+  padding: 18px;
+  font-size: 0.82rem;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.modal-body h3 { font-size: 1.1rem; }
+
+.modal-img-wrapper {
+  width: 100%;
+  height: 180px;
   border-radius: 8px;
+  overflow: hidden;
+  border: 1px solid var(--border-subtle);
+}
 
+.modal-img-wrapper img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.modal-status-highlight {
+  background: #f8fafc;
+  border: 1px solid var(--border-subtle);
+  padding: 10px;
+  border-radius: 6px;
+}
+
+.modal-foot {
+  padding: 12px 18px;
+  border-top: 1px solid var(--border-subtle);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.btn-cancel-report {
+  border: 1px solid #fecdd3;
+  color: #e11d48;
+  background: #ffffff;
+  padding: 8px 14px;
+  border-radius: 6px;
   font-size: 0.78rem;
   font-weight: 600;
-
   cursor: pointer;
-
-  transition:
-    background 0.2s ease,
-    border-color 0.2s ease,
-    color 0.2s ease;
 }
 
-.status-buttons button:hover {
-  background: #f3e8ff;
-  border-color: #8b5cf6;
-  color: #6b21a8;
-}
-
-
-/* ============================================================
-   PANEL DE IA
-============================================================ */
-
-.admin-detail .ai-analysis-box {
-  margin-top: 18px;
-}
-
-.admin-detail .ai-meta-grid {
-  grid-template-columns: repeat(3, 1fr);
-}
-
-
-/* ============================================================
-   SCROLLBAR
-============================================================ */
-
-.admin-scroll::-webkit-scrollbar,
-.sidebar-right::-webkit-scrollbar,
-.admin-dashboard::-webkit-scrollbar {
-  width: 5px;
-}
-
-.admin-scroll::-webkit-scrollbar-track,
-.sidebar-right::-webkit-scrollbar-track,
-.admin-dashboard::-webkit-scrollbar-track {
-  background: transparent;
-}
-
-.admin-scroll::-webkit-scrollbar-thumb,
-.sidebar-right::-webkit-scrollbar-thumb,
-.admin-dashboard::-webkit-scrollbar-thumb {
-  background: #d8dce5;
-  border-radius: 10px;
-}
-
-
-/* ============================================================
-   RESPONSIVE - TABLET
-============================================================ */
-
-@media (max-width: 1050px) {
-
-  .admin-kpis {
-    grid-template-columns: repeat(3, 1fr);
-  }
-
-  .admin-content {
-    grid-template-columns: 1fr;
-  }
-
-  .admin-report-list,
-  .admin-detail {
-    min-height: auto;
-  }
-
-  .admin-scroll {
-    max-height: 350px;
-  }
-
-}
-
-
-/* ============================================================
-   RESPONSIVE - CELULAR
-============================================================ */
-
-@media (max-width: 760px) {
-
-  body {
-    overflow-y: auto;
-  }
-
-  .navbar {
-    height: 60px;
-    padding: 0 14px;
-  }
-
-  .nav-right {
-    gap: 7px;
-  }
-
-  .role-switch {
-    padding: 6px 8px;
-    font-size: 0.68rem;
-  }
-
-  .user-name {
-    display: none;
-  }
-
-  .main-layout {
-    grid-template-columns: 1fr;
-    height: auto;
-  }
-
-  .chat-section {
-    min-height: calc(100vh - 60px);
-    padding: 25px 16px;
-    box-sizing: border-box;
-  }
-
-  .welcome-title {
-    font-size: 1.8rem;
-  }
-
-  .welcome-subtitle {
-    font-size: 0.95rem;
-    margin-bottom: 22px;
-  }
-
-  .input-card {
-    padding: 13px;
-  }
-
-  .input-actions-bar {
-    gap: 10px;
-  }
-
-  .actions-left {
-    flex-wrap: wrap;
-  }
-
-  .action-select,
-  .custom-file-upload {
-    font-size: 0.75rem;
-    padding: 6px 8px;
-  }
-
-  .sidebar-right {
-    border-left: none;
-    border-top: 1px solid #e5e7eb;
-    padding: 20px 16px;
-    max-height: none;
-  }
-
-  .sidebar-right .scroll-historial {
-    max-height: 300px;
-  }
-
-  /* ADMIN */
-
-  .admin-dashboard {
-    height: auto;
-    padding: 20px 14px 30px;
-  }
-
-  .admin-header h1 {
-    font-size: 1.45rem;
-  }
-
-  .admin-header p {
-    font-size: 0.85rem;
-  }
-
-  .admin-kpis {
-    grid-template-columns: repeat(2, 1fr);
-    gap: 9px;
-  }
-
-  .admin-kpi {
-    padding: 14px;
-  }
-
-  .admin-kpi strong {
-    font-size: 1.35rem;
-  }
-
-  .admin-content {
-    grid-template-columns: 1fr;
-    gap: 14px;
-  }
-
-  .admin-report-list,
-  .admin-detail {
-    padding: 15px;
-    border-radius: 13px;
-  }
-
-  .admin-scroll {
-    max-height: 330px;
-  }
-
-  .admin-image-container {
-    height: 220px;
-  }
-
-  .admin-detail-header {
-    flex-direction: column;
-    gap: 10px;
-  }
-
-  .status-buttons {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-  }
-
-  .status-buttons button {
-    width: 100%;
-  }
-
-  .admin-detail .ai-meta-grid {
-    grid-template-columns: 1fr;
-  }
-
-}
-
-
-/* ============================================================
-   CELULAR PEQUEÑO
-============================================================ */
-
-@media (max-width: 420px) {
-
-  .welcome-title {
-    font-size: 1.55rem;
-  }
-
-  .welcome-subtitle {
-    font-size: 0.88rem;
-  }
-
-  .input-actions-bar {
-    align-items: flex-end;
-  }
-
-  .actions-left {
-    max-width: 75%;
-  }
-
-  .actions-right {
-    gap: 5px;
-  }
-
-  .admin-kpis {
-    grid-template-columns: 1fr 1fr;
-  }
-
-  .admin-kpi span {
-    font-size: 0.7rem;
-  }
-
-  .admin-kpi strong {
-    font-size: 1.2rem;
-  }
-
-  .admin-image-container {
-    height: 190px;
-  }
-
-}
-.titulo-input-field {
-  width: 100%;
-  border: none !important; /* Fuerza la eliminación del borde gris exterior */
-  border-bottom: 1px solid #f3f4f6 !important; /* Crea la línea divisoria sutil abajo */
-  background: transparent !important;
-  font-size: 1.05rem;
+.cancel-label {
+  font-size: 0.8rem;
   font-weight: 600;
-  color: #1f2937;
-  font-family: inherit;
-  padding: 8px 0 12px 0 !important;
-  margin-bottom: 12px;
-  outline: none !important; /* Evita el borde azul molesto al hacer clic */
-  box-sizing: border-box;
+  color: #e11d48;
 }
 
-.titulo-input-field::placeholder {
-  color: #9ca3af;
-  font-weight: 400;
-}
-
-
-/* ============================================================
-   NUEVO INPUT DE TÍTULO DE LA PROBLEMÁTICA
-============================================================ */
-.titulo-input-field {
-  width: 100%;
-  border: none !important;
-  border-bottom: 1px solid #f3f4f6 !important; /* Línea divisoria muy suave */
-  background-color: transparent !important;
-  font-size: 1.05rem;
-  font-weight: 600; /* Hace que el título resalte sobre la descripción */
-  color: #1f2937;
-  font-family: inherit;
-  padding: 8px 0 12px 0 !important;
-  margin-bottom: 12px;
-  outline: none !important; /* Elimina el borde azul nativo al hacer clic */
-  box-sizing: border-box;
-}
-
-/* Color y peso del texto sugerido */
-.titulo-input-field::placeholder {
-  color: #9ca3af;
-  font-weight: 400;
-}
-/* ============================================================
-   CONTENEDOR DE PESTAÑAS DE ROLES (SEGMENTED CONTROL)
-============================================================ */
-.role-selector-container {
-  display: flex;
-  gap: 5px;
-  background-color: #f3f4f6; /* Fondo gris claro atenuado */
-  padding: 4px;
-  border-radius: 8px;
-  border: 1px solid #e5e7eb;
-}
-
-/* Estilo base para cada pestaña */
-.role-tab-btn {
-  padding: 6px 12px;
-  border-radius: 6px;
-  border: none;
-  cursor: pointer;
-  font-weight: 600;
-  font-size: 0.9rem;
-  font-family: inherit;
-  background-color: transparent;
-  color: #6b7280;
-  transition: all 0.2s ease;
-}
-
-/* Efecto al pasar el cursor */
-.role-tab-btn:hover {
-  color: #1f2937;
-}
-
-/* Pestaña activa (La que está seleccionada actualmente) */
-.role-tab-btn.active {
-  background-color: #ffffff;
-  color: #1f2937;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.08);
-}
-/* ============================================================
-   BOTÓN DE CANCELACIÓN DENTRO DEL MODAL
-============================================================ */
-.modal-btn-cancel {
-  background-color: #dc3545; /* Rojo semántico de destrucción/cancelación */
+.btn-confirm {
+  background: var(--text-dark);
   color: #ffffff;
   border: none;
-  padding: 10px 16px;
-  border-radius: 8px;
+  padding: 8px 16px;
+  border-radius: 6px;
+  font-size: 0.78rem;
+  font-weight: 600;
+  margin-left: auto;
   cursor: pointer;
-  font-weight: bold;
-  font-family: inherit;
-  font-size: 0.95rem;
-  transition: background-color 0.2s ease;
 }
 
-/* Efecto hover para feedback visual */
-.modal-btn-cancel:hover {
-  background-color: #c82333;
+/* ANIMACIÓN NUEVO REPORTE */
+.reciente-animacion {
+  animation: verdeSutil 2.5s ease-in-out;
 }
 
-/* Etiqueta de texto si el reporte ya fue cancelado previamente */
-.modal-status-canceled-label {
-  color: #dc3545;
-  font-weight: bold;
-  font-size: 0.95rem;
-  align-self: center;
+@keyframes verdeSutil {
+  0% { background-color: #f0fdf4; }
+  100% { background-color: transparent; }
 }
