@@ -1,10 +1,24 @@
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000'
 
+function getErrorMessage(payload) {
+  const detail = payload?.detail
+
+  if (typeof detail === 'string') return detail
+  if (detail && !Array.isArray(detail) && typeof detail === 'object') {
+    return detail.message || detail.reason || 'No fue posible completar la solicitud.'
+  }
+  if (Array.isArray(detail)) {
+    return detail.map((item) => item?.msg).filter(Boolean).join(' ') || 'Los datos enviados no son válidos.'
+  }
+
+  return payload?.message || 'No fue posible completar la solicitud.'
+}
+
 async function request(path, options = {}) {
   const response = await fetch(`${API_URL}${path}`, options)
   const contentType = response.headers.get('content-type') || ''
   const payload = contentType.includes('application/json') ? await response.json() : null
-  if (!response.ok) throw new Error(payload?.detail || 'No fue posible completar la solicitud.')
+  if (!response.ok) throw new Error(getErrorMessage(payload))
   return payload
 }
 

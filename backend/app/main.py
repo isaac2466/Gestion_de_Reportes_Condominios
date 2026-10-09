@@ -3,7 +3,7 @@ import os
 
 from starlette.concurrency import run_in_threadpool
 
-from app.services.ai_service import analyze_report
+from app.services.ai_service import analyze_report, validate_report
 
 from fastapi import FastAPI, Depends, HTTPException, File, UploadFile, Form
 from fastapi.middleware.cors import CORSMiddleware
@@ -134,6 +134,24 @@ async def crear_reporte(
     habitante = db.query(Habitante).filter(Habitante.id_habitante == id_habitante).first()
     if not habitante:
         raise HTTPException(status_code=404, detail="El habitante especificado no existe")
+
+    # Validar que el contenido describa una incidencia antes de analizarlo.
+    validacion_ia = await run_in_threadpool(
+        validate_report,
+        titulo,
+        descripcion,
+        locacion or habitante.Direccion,
+    )
+
+    if validacion_ia and validacion_ia["decision"] != "valid":
+        raise HTTPException(
+            status_code=400,
+            detail={
+                "status": validacion_ia["decision"],
+                "message": validacion_ia["user_message"],
+                "reason": validacion_ia["reason"],
+            },
+        )
 
     # Analizar con IA (Ollama)
     analisis_ia = await run_in_threadpool(

@@ -14,17 +14,31 @@ Category = Literal[
     "Otros",
 ]
 
-Prioriy = Literal[
+Priority = Literal[
     "Low",
     "Medium",
     "High",
     "Critical",
 ]
 
+
+class ReportEligibility(BaseModel):
+    decision: Literal[
+        "valid",
+        "needs_information",
+        "not_reportable",
+    ]
+
+    reason: str = Field(
+        min_length=1,
+        max_length=300,
+    )
+
+
 class ReportAnalysis(BaseModel):
     category: Category
 
-    priority: Prioriy
+    priority: Priority
 
     severity: int = Field(
         ge=1,
