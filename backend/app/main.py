@@ -127,7 +127,7 @@ async def crear_reporte(
     titulo: str = Form(...),
     descripcion: str = Form(...),
     locacion: str = Form(None),
-    archivos: list[UploadFile] = File(None),
+    archivos: list[UploadFile] | None= File(default=None),
     db: Session = Depends(get_db)
 ):
     # Validar existencia del habitante
