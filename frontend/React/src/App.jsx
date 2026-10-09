@@ -17,6 +17,7 @@ export default function App() {
   const [reports, setReports] = useState([])
   const [selected, setSelected] = useState(null)
   const [loading, setLoading] = useState(false)
+  const [submittingReport, setSubmittingReport] = useState(false)
   const [message, setMessage] = useState('')
   const [historyOpen, setHistoryOpen] = useState(false)
   const [reportModalOpen, setReportModalOpen] = useState(false)
@@ -92,7 +93,7 @@ export default function App() {
   }
 
   async function createReport(values) {
-    setLoading(true)
+    setSubmittingReport(true)
     setMessage('')
     try {
       const body = new FormData()
@@ -111,7 +112,7 @@ export default function App() {
       setMessage(error.message)
       return null
     } finally {
-      setLoading(false)
+      setSubmittingReport(false)
     }
   }
 
@@ -134,6 +135,6 @@ export default function App() {
   return <div className="app-shell">
     <nav className="navbar"><div className="nav-brand"><span className="brand-dot" /><span className="brand-name">Reporta+</span></div><div className="nav-controls">{!isAdmin && <button className="history-menu-button" onClick={() => setHistoryOpen(true)} aria-label="Abrir mis reportes"><span /><span /><span /></button>}<span className="role-label">{user.Nombre} · {isAdmin ? 'Administrador' : 'Residente'}</span><span className="avatar">{user.Nombre.slice(0, 2).toUpperCase()}</span><button className="role-btn" onClick={logout}>Salir</button></div></nav>
     {message && <div className="global-message" role="status">{message}<button onClick={() => setMessage('')}>×</button></div>}
-    {isAdmin ? <AdminDashboard reports={visibleReports} selected={selected} onSelect={setSelected} onStatusChange={updateStatus} updating={loading} /> : <main className="resident-layout"><ReportForm key={conversationKey} user={user} onSubmit={createReport} busy={loading} /><button className={`history-backdrop ${historyOpen ? 'visible' : ''}`} onClick={() => setHistoryOpen(false)} aria-label="Cerrar historial" /><aside className={`history-panel ${historyOpen ? 'open' : ''}`}><header><div><span className="eyebrow">HISTORIAL</span><h2>Mis reportes</h2></div><div className="history-header-actions"><button className="refresh-button" onClick={loadReports} disabled={loading} aria-label="Actualizar reportes">↻</button><button className="history-close" onClick={() => setHistoryOpen(false)} aria-label="Cerrar historial">×</button></div></header><ReportList compact reports={visibleReports} selectedId={selected?.id} onSelect={openReport} emptyMessage="Cuando envíes tu primer reporte aparecerá aquí." /><button className="new-report-button" onClick={startNewReport}><span>＋</span>Nuevo reporte</button></aside>{reportModalOpen && selected && <div className="report-modal-backdrop" onClick={() => setReportModalOpen(false)}><section className="report-modal" role="dialog" aria-modal="true" aria-labelledby="report-modal-title" onClick={(event) => event.stopPropagation()}><header><div><span className="eyebrow">DETALLE DEL REPORTE</span><h2 id="report-modal-title">Seguimiento</h2></div><button onClick={() => setReportModalOpen(false)} aria-label="Cerrar detalle">×</button></header><div className="report-modal-content"><ReportDetail report={selected} /></div></section></div>}</main>}
+    {isAdmin ? <AdminDashboard reports={visibleReports} selected={selected} onSelect={setSelected} onStatusChange={updateStatus} updating={loading} /> : <main className="resident-layout"><ReportForm key={conversationKey} user={user} onSubmit={createReport} busy={submittingReport} /><button className={`history-backdrop ${historyOpen ? 'visible' : ''}`} onClick={() => setHistoryOpen(false)} aria-label="Cerrar historial" /><aside className={`history-panel ${historyOpen ? 'open' : ''}`}><header><div><span className="eyebrow">HISTORIAL</span><h2>Mis reportes</h2></div><div className="history-header-actions"><button className="refresh-button" onClick={loadReports} disabled={loading} aria-label="Actualizar reportes">↻</button><button className="history-close" onClick={() => setHistoryOpen(false)} aria-label="Cerrar historial">×</button></div></header><ReportList compact reports={visibleReports} selectedId={selected?.id} onSelect={openReport} emptyMessage="Cuando envíes tu primer reporte aparecerá aquí." /><button className="new-report-button" onClick={startNewReport}><span>＋</span>Nuevo reporte</button></aside>{reportModalOpen && selected && <div className="report-modal-backdrop" onClick={() => setReportModalOpen(false)}><section className="report-modal" role="dialog" aria-modal="true" aria-labelledby="report-modal-title" onClick={(event) => event.stopPropagation()}><header><div><span className="eyebrow">DETALLE DEL REPORTE</span><h2 id="report-modal-title">Seguimiento</h2></div><button onClick={() => setReportModalOpen(false)} aria-label="Cerrar detalle">×</button></header><div className="report-modal-content"><ReportDetail report={selected} /></div></section></div>}</main>}
   </div>
 }

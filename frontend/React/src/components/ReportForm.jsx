@@ -10,23 +10,17 @@ function ImageIcon() {
   return <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="4" width="18" height="16" rx="2" /><circle cx="9" cy="9" r="2" /><path d="m21 15-4.5-4.5L8 19" /></svg>
 }
 
-function MicIcon() {
-  return <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="9" y="3" width="6" height="12" rx="3" /><path d="M5 11a7 7 0 0 0 14 0M12 18v3" /></svg>
-}
-
 export default function ReportForm({ user, onSubmit, busy }) {
   const [form, setForm] = useState(initialForm)
   const [file, setFile] = useState(null)
   const [preview, setPreview] = useState(null)
   const [error, setError] = useState('')
-  const [listening, setListening] = useState(false)
   const [messages, setMessages] = useState([])
-  const recognition = useRef(null)
   const endOfConversation = useRef(null)
 
   useEffect(() => {
     endOfConversation.current?.scrollIntoView({ behavior: 'smooth' })
-  }, [messages])
+  }, [messages, busy])
 
   function chooseFile(nextFile) {
     if (preview) URL.revokeObjectURL(preview)
@@ -60,24 +54,6 @@ export default function ReportForm({ user, onSubmit, busy }) {
     }
   }
 
-  function dictate() {
-    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition
-    if (!SpeechRecognition) return setError('El dictado está disponible en Chrome y Edge.')
-    if (listening) return recognition.current?.stop()
-
-    const instance = new SpeechRecognition()
-    instance.lang = 'es-MX'
-    instance.onresult = (event) => setForm((current) => ({
-      ...current,
-      description: `${current.description} ${event.results[0][0].transcript}`.trim(),
-    }))
-    instance.onend = () => setListening(false)
-    instance.onerror = () => setListening(false)
-    recognition.current = instance
-    instance.start()
-    setListening(true)
-  }
-
   return (
     <section className={`composer-panel ${messages.length ? 'has-messages' : ''}`}>
       <div className="chat-stage">
@@ -85,7 +61,6 @@ export default function ReportForm({ user, onSubmit, busy }) {
           <div className="chat-welcome">
             <span className="eyebrow">ASISTENTE DE REPORTES</span>
             <h1>¿Qué está ocurriendo?</h1>
-            <p>Describe la situación con tus palabras. Tu reporte se enviará al equipo administrador.</p>
           </div>
         )}
 
@@ -105,6 +80,16 @@ export default function ReportForm({ user, onSubmit, busy }) {
               </article>
             ))}
             <div ref={endOfConversation} />
+          </div>
+        )}
+
+        {busy && (
+          <div className="assistant-thinking" role="status" aria-live="polite">
+            <div className="thinking-avatar">R+</div>
+            <div className="thinking-bubble">
+              <span className="thinking-label">Analizando tu reporte</span>
+              <span className="thinking-dots" aria-hidden="true"><i /><i /><i /></span>
+            </div>
           </div>
         )}
 
@@ -143,7 +128,6 @@ export default function ReportForm({ user, onSubmit, busy }) {
                 <span>{file ? 'Evidencia lista' : 'Adjuntar'}</span>
                 <input type="file" accept="image/*" onChange={(event) => chooseFile(event.target.files[0] || null)} />
               </label>
-              <button type="button" className={`chat-tool icon-only ${listening ? 'active' : ''}`} onClick={dictate} aria-label="Dictar descripción"><MicIcon /></button>
               <button className="chat-send" disabled={busy} aria-label="Enviar reporte"><SendIcon /></button>
             </div>
           </div>
