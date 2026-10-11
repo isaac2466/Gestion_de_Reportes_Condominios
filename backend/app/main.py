@@ -14,6 +14,7 @@ from pydantic import BaseModel
 from dotenv import load_dotenv
 
 # Importaciones de base de datos, modelos y servicio de IA
+from app.routes.conversations import router as conversations_router
 from app.config.database import engine, Base, get_db
 from app.models.user import Habitante
 from app.models.report import Reporte, PrioridadEnum, EstadoEnum, ImagenReporte
@@ -29,6 +30,8 @@ app = FastAPI(
     title=os.getenv("APP_NAME", "Colonia Reportes API"),
     version="1.0.0"
 )
+
+app.include_router(conversations_router)
 
 # ---------------- CONFIGURACIÓN DE CARPETA DE IMÁGENES ----------------
 UPLOAD_DIR = "uploads"
