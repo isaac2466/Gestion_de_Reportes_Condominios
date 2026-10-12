@@ -118,7 +118,9 @@ REGLAS DE UBICACIÓN Y CONTEXTO:
 - NUNCA guardes "location" dentro de "context".
 
 - "En mi casa", "en mi domicilio", "en mi hogar" y "mi vivienda" sí son
-  ubicaciones. Devuelve la referencia literal; Python resolverá la dirección.
+  ubicaciones. También lo son referencias relativas como "enfrente de mi casa",
+  "afuera de su casa" o "cerca de mi casa". Devuelve la referencia literal;
+  Python resolverá la dirección registrada del usuario.
 - Nunca inventes una dirección ni generes location_source o location_label.
 - No confundas la casa de un vecino o familiar con el domicilio del usuario.
 - Una negación como "No es en mi casa, es junto al parque" debe producir

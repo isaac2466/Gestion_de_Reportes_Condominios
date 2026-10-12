@@ -50,7 +50,13 @@ REQUIRED_DRAFT_FIELDS = (
 )
 
 RESIDENT_LOCATION_KEYS = {"location_source", "location_label"}
-HOME_REFERENCE = r"mi (?:casa|domicilio|hogar|vivienda)"
+HOME_REFERENCE = r"(?:mi|su) (?:casa|domicilio|hogar|vivienda)"
+HOME_PROXIMITY = (
+    r"(?:en frente de|enfrente de|frente a|al frente de|delante de|"
+    r"afuera de|fuera de|al exterior de|en el exterior de|"
+    r"cerca de|cerca a|cercas de|junto a|al lado de|a un lado de|"
+    r"pegado a|pegada a|alrededor de|en los alrededores de|por)"
+)
 
 
 def resident_home_reference(text: str) -> tuple[bool, bool]:
@@ -65,11 +71,19 @@ def resident_home_reference(text: str) -> tuple[bool, bool]:
             r"\b(?:no|nunca|tampoco|ni)\s+"
             r"(?:(?:es|esta|era|estaba|fue|ocurre|ocurrio|sucede|sucedio|pasa|paso)\s+)?"
             r"(?:(?:ocurriendo|pasando|sucediendo|ubicado|ubicada)\s+)?"
-            r"(?:(?:en|dentro de)\s+)?$", before,
+            rf"(?:(?:en|dentro de|{HOME_PROXIMITY})\s+)?$", before,
         ):
             denied = True
-        elif not re.search(r"\b(?:de|a|desde|hacia|hasta)\s+$", before) and not re.match(r"\s+(?:de|del|en)\b", after):
+            affirmative = False
+        elif (
+            (
+                not re.search(r"\b(?:de|a|desde|hacia|hasta)\s+$", before)
+                or re.search(rf"\b{HOME_PROXIMITY}\s+$", before)
+            )
+            and not re.match(r"\s+(?:de|del|en)\b", after)
+        ):
             affirmative = True
+            denied = False
     return affirmative, denied
 
 
@@ -83,7 +97,11 @@ def resolve_resident_location(
     """Resolve only an own-home reference and retain the saved address snapshot."""
     draft = draft.model_copy(deep=True)
     location = (draft.location or "").strip()
-    relative = bool(re.fullmatch(rf"(?:en )?{HOME_REFERENCE}", _normalize_text(location)))
+    normalized_location = _normalize_text(location)
+    relative = bool(re.fullmatch(
+        rf"(?:en )?{HOME_REFERENCE}|{HOME_PROXIMITY} {HOME_REFERENCE}",
+        normalized_location,
+    ))
     mentioned, denied = resident_home_reference(user_message)
     previous_location = conversation.locacion_borrador
     was_resident_address = (conversation.datos_contexto or {}).get("location_source") == "resident_address"

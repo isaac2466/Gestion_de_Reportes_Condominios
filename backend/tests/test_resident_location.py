@@ -69,14 +69,39 @@ class ResidentLocationTests(unittest.TestCase):
     def test_other_homes_and_relative_landmarks_are_not_own_address(self):
         for text in (
             "Hay un problema en casa de mi vecino.", "casa de mi mamá", "otra casa",
-            "la casa de enfrente", "en la casa", "frente a mi casa", "cerca de mi casa",
-            "junto a mi domicilio", "mi casa de la playa", "mi casamiento",
+            "la casa de enfrente", "en la casa", "mi casa de la playa", "mi casamiento",
             "No es en mi casa, es junto al parque.", "No ocurre en mi domicilio.",
             "No está pasando en mi casa.", "No está dentro de mi vivienda.",
+            "El problema está enfrente de la casa de mi vecino.",
+            "La fuga está afuera de la casa de mi mamá.",
         ):
             with self.subTest(text=text):
                 self.assertIsNone(self.resolve(text).location)
         self.db.query.assert_not_called()
+
+    def test_relative_own_home_references_use_the_registered_address(self):
+        references = (
+            ("El problema está enfrente de mi casa.", "enfrente de mi casa"),
+            ("La fuga está afuera de mi casa.", "afuera de mi casa"),
+            ("La luminaria está cerca de mi casa.", "cerca de mi casa"),
+            ("El poste está frente a su casa.", "frente a su casa"),
+            ("Hay una falla al lado de mi domicilio.", "al lado de mi domicilio"),
+            ("El reporte es por mi vivienda.", "por mi vivienda"),
+        )
+        for text, extracted_location in references:
+            for location, update in ((None, None), (extracted_location, extracted_location)):
+                with self.subTest(text=text, location=location):
+                    draft = self.resolve(text, location, update=update)
+                    self.assertEqual(draft.location, ADDRESS)
+                    self.assertEqual(draft.context["location_source"], "resident_address")
+
+    def test_relative_home_correction_uses_the_latest_reference(self):
+        draft = self.resolve(
+            "No es dentro de mi casa, la fuga está afuera de mi casa.",
+            "afuera de mi casa",
+            update="afuera de mi casa",
+        )
+        self.assertEqual(draft.location, ADDRESS)
 
     def test_missing_address_or_resident_requests_location(self):
         for resident in (None, SimpleNamespace(Direccion="  "), SimpleNamespace(Direccion=None)):
