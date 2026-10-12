@@ -72,6 +72,7 @@ CREATE TABLE conversaciones_reporte (
     recomendacion_borrador TEXT NULL,
 
     campos_faltantes JSON NULL,
+    datos_contexto JSON NULL,
 
     version_borrador INT NOT NULL DEFAULT 1,
 
@@ -140,6 +141,8 @@ CREATE TABLE mensajes_conversacion (
     )
 );
 
+DESCRIBE conversaciones_reporte;
+
 USE Colonia;
 
 SHOW TABLES;
@@ -151,6 +154,21 @@ DESCRIBE mensajes_conversacion;
 SHOW CREATE TABLE conversaciones_reporte;
 
 SELECT * FROM habitantes;
+
+SELECT * FROM conversaciones_reporte;
+
+SELECT * FROM mensajes_conversacion;
+
+SELECT
+    id,
+    id_conversacion,
+    rol,
+    tipo,
+    contenido,
+    client_message_id,
+    fecha_creacion
+FROM mensajes_conversacion
+ORDER BY id;
 
 SELECT
     id_habitante,
@@ -174,6 +192,7 @@ SELECT
     estado
 FROM reportes;
 
+USE Colonia;
 
 UPDATE habitantes
 SET Rol = 'admin'
@@ -182,3 +201,64 @@ WHERE id_habitante = 2;
 SELECT id_habitante, Nombre, Email, Rol
 FROM habitantes
 WHERE id_habitante = 2;
+
+SELECT
+    id,
+    id_habitante,
+    id_reporte,
+    estado,
+    fecha_actualizacion
+FROM conversaciones_reporte;
+
+SELECT *
+FROM mensajes_conversacion
+WHERE id_conversacion = 2;
+
+SELECT COUNT(*) AS total_reportes
+FROM reportes;
+
+SELECT
+    id,
+    id_habitante,
+    id_reporte,
+    estado
+FROM conversaciones_reporte;
+
+SELECT
+    id,
+    estado,
+    titulo_borrador,
+    descripcion_borrador,
+    locacion_borrador,
+    campos_faltantes,
+    datos_contexto,
+    version_borrador
+FROM conversaciones_reporte
+WHERE id = 3;
+
+
+SELECT
+    id,
+    estado,
+    titulo_borrador,
+    descripcion_borrador,
+    locacion_borrador,
+    categoria_borrador,
+    prioridad_borrador,
+    severidad_borrador,
+    resumen_borrador,
+    recomendacion_borrador,
+    campos_faltantes,
+    datos_contexto,
+    version_borrador
+FROM conversaciones_reporte
+WHERE id = 3;
+
+
+SELECT
+    id,
+    id_reporte,
+    estado,
+    version_borrador
+FROM conversaciones_reporte
+ORDER BY id;

@@ -22,6 +22,11 @@ from app.schemas.conversation import (
     ConversationResponse,
     ConversationListItem,
     ConversationCancelledResponse,
+    ConversationTurnResponse,
+)
+
+from app.services.conversation_service import (
+    process_conversation_message,
 )
 
 
@@ -29,6 +34,50 @@ router = APIRouter(
     prefix="/api/conversations",
     tags=["Conversations"],
 )
+
+
+def get_turn_assistant_messages(
+    db: Session,
+    user_message: MensajeConversacion,
+) -> list[MensajeConversacion]:
+
+    next_user_message = (
+        db.query(MensajeConversacion)
+        .filter(
+            MensajeConversacion.id_conversacion
+            == user_message.id_conversacion,
+            MensajeConversacion.rol
+            == MessageRole.user,
+            MensajeConversacion.id
+            > user_message.id,
+        )
+        .order_by(MensajeConversacion.id.asc())
+        .first()
+    )
+
+    query = (
+        db.query(MensajeConversacion)
+        .filter(
+            MensajeConversacion.id_conversacion
+            == user_message.id_conversacion,
+            MensajeConversacion.rol
+            == MessageRole.assistant,
+            MensajeConversacion.id
+            > user_message.id,
+        )
+    )
+
+    if next_user_message:
+        query = query.filter(
+            MensajeConversacion.id
+            < next_user_message.id
+        )
+
+    return (
+        query
+        .order_by(MensajeConversacion.id.asc())
+        .all()
+    )
 
 
 def message_to_response(
@@ -59,6 +108,7 @@ def conversation_to_response(
         severity=conversation.severidad_borrador,
         summary=conversation.resumen_borrador,
         recommendation=conversation.recomendacion_borrador,
+        context=conversation.datos_contexto or {},
         missing_fields=conversation.campos_faltantes or [],
         version=conversation.version_borrador,
     )
@@ -235,8 +285,8 @@ def create_conversation(
 
 @router.post(
     "/{conversation_id}/messages",
-    response_model=MessageResponse,
-    status_code=status.HTTP_201_CREATED,
+    response_model=ConversationTurnResponse,
+    status_code=201,
 )
 def create_conversation_message(
     conversation_id: int,
@@ -247,7 +297,8 @@ def create_conversation_message(
     conversation = (
         db.query(ConversacionReporte)
         .filter(
-            ConversacionReporte.id == conversation_id
+            ConversacionReporte.id
+            == conversation_id
         )
         .first()
     )
@@ -269,11 +320,12 @@ def create_conversation_message(
             ),
         )
 
-    # Si React repite accidentalmente una solicitud con
-    # el mismo client_message_id, devolvemos el mensaje
-    # existente en lugar de crear un duplicado.
+    # --------------------------------------------
+    # IDEMPOTENCIA
+    # --------------------------------------------
+
     if data.client_message_id:
-        existing_message = (
+        existing = (
             db.query(MensajeConversacion)
             .filter(
                 MensajeConversacion.id_conversacion
@@ -284,35 +336,154 @@ def create_conversation_message(
             .first()
         )
 
-        if existing_message:
-            response.status_code = status.HTTP_200_OK
-
-            return message_to_response(
-                existing_message
+        if existing:
+            existing_form_data = (
+                (existing.metadatos or {}).get("form_data")
             )
 
-    try:
-        message = MensajeConversacion(
-            id_conversacion=conversation_id,
-            rol=MessageRole.user,
-            tipo=MessageType.text,
-            contenido=data.content,
-            client_message_id=data.client_message_id,
+            incoming_form_data = (
+                data.form_data.model_dump(exclude_none=True)
+                if data.form_data
+                else None
+            )
+
+            if (
+                existing.contenido != data.content
+                or existing_form_data != incoming_form_data
+            ):
+                raise HTTPException(
+                    status_code=409,
+                    detail=(
+                        "El client_message_id ya fue utilizado "
+                        "con un contenido diferente."
+                    ),
+                )
+
+            response.status_code = 200
+
+            assistant_messages = get_turn_assistant_messages(
+                db,
+                existing,
+            )
+
+            snapshot = conversation_to_response(
+                conversation
+            )
+
+            return ConversationTurnResponse(
+                conversation_id=conversation.id,
+                status=conversation.estado,
+                draft=snapshot.draft,
+                missing_fields=(
+                    conversation.campos_faltantes or []
+                ),
+                analysis_available=(
+                    any(
+                        (
+                            message.metadatos or {}
+                        ).get("analysis_available") is True
+                        for message in assistant_messages
+                    )
+                ),
+                user_message=message_to_response(
+                    existing
+                ),
+                assistant_messages=[
+                    message_to_response(message)
+                    for message in assistant_messages
+                ],
+            )
+
+    # --------------------------------------------
+    # GUARDAR MENSAJE DEL USUARIO
+    # --------------------------------------------
+
+    form_data = (
+        data.form_data.model_dump(
+            exclude_none=True
+        )
+        if data.form_data
+        else None
+    )
+
+    user_message = MensajeConversacion(
+        id_conversacion=conversation.id,
+        rol=MessageRole.user,
+        tipo=MessageType.text,
+        contenido=data.content,
+        metadatos=(
+            {"form_data": form_data}
+            if form_data
+            else None
+        ),
+        client_message_id=data.client_message_id,
+    )
+
+    db.add(user_message)
+
+    # IMPORTANTE:
+    # flush obtiene el ID pero todavía NO confirma
+    # la transacción.
+    db.flush()
+
+    # --------------------------------------------
+    # ORQUESTADOR
+    # --------------------------------------------
+
+    result = process_conversation_message(
+        db=db,
+        conversation=conversation,
+        user_message=data.content,
+        exclude_message_id=user_message.id,
+        form_data=form_data,
+    )
+
+    db.refresh(user_message)
+    db.refresh(conversation)
+
+    assistant_ids = [
+        message["id"]
+        for message in result["assistant_messages"]
+    ]
+
+    assistant_objects = []
+
+    if assistant_ids:
+        assistant_objects = (
+            db.query(MensajeConversacion)
+            .filter(
+                MensajeConversacion.id.in_(
+                    assistant_ids
+                )
+            )
+            .order_by(
+                MensajeConversacion.id.asc()
+            )
+            .all()
         )
 
-        db.add(message)
+    snapshot = conversation_to_response(
+        conversation
+    )
 
-        # La conversación tuvo actividad nueva.
-        conversation.fecha_actualizacion = func.now()
-
-        db.commit()
-        db.refresh(message)
-
-    except Exception:
-        db.rollback()
-        raise
-
-    return message_to_response(message)
+    return ConversationTurnResponse(
+        conversation_id=conversation.id,
+        status=conversation.estado,
+        draft=snapshot.draft,
+        missing_fields=result[
+            "missing_fields"
+        ],
+        analysis_available=result[
+            "analysis_available"
+        ],
+        user_message=message_to_response(
+            user_message
+        ),
+        assistant_messages=[
+            message_to_response(message)
+            for message in assistant_objects
+        ],
+    )
 
 
 @router.post(

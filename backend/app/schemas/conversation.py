@@ -12,6 +12,31 @@ class ConversationCreate(BaseModel):
     id_habitante: int
 
 
+class ConversationFormData(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    description: str | None = Field(
+        default=None,
+        min_length=1,
+        max_length=4000,
+    )
+
+    location: str | None = Field(
+        default=None,
+        min_length=1,
+        max_length=255,
+    )
+
+    since_when: str | None = None
+    risk_active: bool | str | None = None
+    affects_passage: bool | str | None = None
+    frequency: str | None = None
+    time_window: str | None = None
+    approximate_size: str | None = None
+    affected_area: str | None = None
+    additional_details: str | None = None
+
+
 class ConversationMessageCreate(BaseModel):
     content: str = Field(
         min_length=1,
@@ -22,6 +47,8 @@ class ConversationMessageCreate(BaseModel):
         default=None,
         max_length=100,
     )
+
+    form_data: ConversationFormData | None = None
 
 
 class MessageResponse(BaseModel):
@@ -54,6 +81,10 @@ class DraftResponse(BaseModel):
 
     missing_fields: list[str] = Field(
         default_factory=list
+    )
+
+    context: dict[str, Any] = Field(
+        default_factory=dict
     )
 
     version: int = 1
@@ -97,3 +128,16 @@ class ConversationListItem(BaseModel):
     last_message: str | None = None
 
     updated_at: datetime
+
+
+class ConversationTurnResponse(BaseModel):
+    conversation_id: int
+    status: ConversationStatus
+    draft: DraftResponse
+    missing_fields: list[str] = Field(default_factory=list)
+    analysis_available: bool | None = None
+
+    user_message: MessageResponse
+    assistant_messages: list[MessageResponse] = Field(
+        default_factory=list
+    )

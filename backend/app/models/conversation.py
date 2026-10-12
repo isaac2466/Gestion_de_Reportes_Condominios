@@ -105,6 +105,11 @@ class ConversacionReporte(Base):
         nullable=True,
     )
 
+    datos_contexto = Column(
+        JSON,
+        nullable=True,
+    )
+
     version_borrador = Column(
         Integer,
         nullable=False,
