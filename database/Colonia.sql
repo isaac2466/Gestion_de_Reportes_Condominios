@@ -23,6 +23,7 @@ severidad TINYINT DEFAULT 1,
 resumen_ia TEXT,
 recomendacion_ia TEXT,
 confianza_ia DECIMAL (5,2),
+datos_contexto JSON NULL,
 estado ENUM ('Pendiente', 'En Progreso', 'Resuelto', 'Rechazado') default 'Pendiente',
 fecha_creacion TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
 fecha_actualizacion TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
@@ -75,6 +76,8 @@ CREATE TABLE conversaciones_reporte (
     datos_contexto JSON NULL,
 
     version_borrador INT NOT NULL DEFAULT 1,
+
+    confirmada_en TIMESTAMP NULL,
 
     fecha_creacion TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
 

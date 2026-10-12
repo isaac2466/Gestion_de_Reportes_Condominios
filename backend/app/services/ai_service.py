@@ -436,6 +436,19 @@ REGLAS DE SEGURIDAD PARA LAS RECOMENDACIONES:
 
 - La recomendación debe priorizar siempre la seguridad de las personas.
 
+IMPORTANTE SOBRE LA UBICACIÓN:
+
+La UBICACIÓN ESTRUCTURADA proporcionada por el sistema es la fuente de
+verdad actual.
+
+Si la descripción o el título contienen una ubicación diferente debido
+a una corrección previa del usuario, debes ignorar esa ubicación antigua.
+
+El resumen y la recomendación deben utilizar únicamente la ubicación
+estructurada actual.
+
+Nunca repitas una ubicación antigua que contradiga LOCATION.
+
 EJEMPLO DE RECOMENDACIÓN SEGURA:
 
 Reporte:

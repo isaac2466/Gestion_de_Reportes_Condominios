@@ -50,8 +50,7 @@ function jsonPost(body) {
   return { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) }
 }
 
-// Activate only once the corresponding backend contracts are implemented.
-export const conversationFeatures = { confirmation: false, attachments: false }
+export const conversationFeatures = { confirmation: true, attachments: false }
 
 export function conversationError(error) {
   if (error.status === 404) return 'No encontramos esta conversación. Actualiza el historial o inicia una nueva.'

@@ -346,6 +346,9 @@ button:disabled { cursor: not-allowed; opacity: .5; }
 .conversation-summary dt { color: var(--text-muted); }
 .conversation-summary dd { margin: 0; white-space: pre-wrap; }
 .summary-actions { display: flex; flex-wrap: wrap; gap: 7px; margin-top: 14px; }
+.confirmation-card { display: flex; flex-direction: column; gap: 7px; margin-top: 14px; padding: 12px; border: 1px solid #ccebd8; border-radius: 8px; background: #f3fcf6; color: #166534; font-size: .82rem; }
+.confirmation-card strong { font-size: .9rem; }
+.confirmation-card .secondary-button { align-self: flex-start; color: #166534; border-color: #b8dec5; }
 .secondary-button { border: 1px solid var(--border-subtle); background: white; color: var(--primary-blue); border-radius: 7px; padding: 8px 11px; font-size: .76rem; }
 .secondary-button:hover:not(:disabled) { border-color: var(--border-strong); background: #faf7fb; }
 .closed-conversation { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; color: var(--text-muted); font-size: .8rem; padding-top: 8px; }

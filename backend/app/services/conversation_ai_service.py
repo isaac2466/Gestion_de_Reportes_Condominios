@@ -140,6 +140,34 @@ Resultado: location = "En mi casa"
   affected_area,
   additional_details.
 
+REGLAS PARA CORRECCIONES:
+
+- El último mensaje del usuario tiene prioridad sobre información anterior.
+- Si el usuario corrige un dato, devuelve el nuevo valor de ese campo.
+- Si la corrección hace que el título o la descripción actuales sean
+  contradictorios, devuelve también un título y/o descripción actualizados.
+
+Ejemplo:
+
+BORRADOR ACTUAL:
+title: "Basura en la entrada norte"
+description: "Hay basura tirada en la entrada norte"
+location: "Entrada norte"
+
+USUARIO:
+"Corrijo la ubicación: no es en la entrada norte, es junto al parque."
+
+EXTRACCIÓN:
+{
+  "title": "Basura junto al parque",
+  "description": "Hay basura tirada junto al parque.",
+  "location": "Junto al parque",
+  "context": {},
+  "safety_risk": false
+}
+
+Nunca mantengas información explícitamente corregida por el usuario.
+
 Ejemplo:
 
 Borrador:

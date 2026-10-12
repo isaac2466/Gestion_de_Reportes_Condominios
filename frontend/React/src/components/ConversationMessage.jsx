@@ -42,6 +42,7 @@ export default function ConversationMessage({ message, conversation, busy, value
   const summaryActive = active && conversation.status === 'ready_for_confirmation'
   const draft = metadata.draft || (active ? conversation.draft : {}) || {}
   const reportId = metadata.report_id || conversation.report_id
+  const reportStatus = metadata.report_status
   const user = message.role === 'user'
   return <article className={`${user ? 'user-message' : 'assistant-message'} message-${message.type}`}>
     <div className="message-avatar" aria-hidden="true">{user ? 'Tú' : 'R+'}</div>
@@ -53,16 +54,17 @@ export default function ConversationMessage({ message, conversation, busy, value
         <dl className="conversation-summary">{Object.entries(draftLabels).filter(([key]) => draft[key] !== null && draft[key] !== undefined && draft[key] !== '').map(([key, label]) => <div key={key}><dt>{label}</dt><dd>{key === 'location' && draft.context?.location_source === 'resident_address' ? <>Tu domicilio<br />{draft.location}</> : key === 'priority' ? priorityLabel(draft[key]) : key === 'severity' ? `${draft[key]}/5` : draft[key]}</dd></div>)}</dl>
         {metadata.analysis_available === false && <p className="fallback-note">La clasificación automática no está disponible. Tu borrador se conserva.</p>}
         <small>{summaryActive ? 'Borrador listo para revisar · aún no enviado' : 'Resumen histórico'} · Versión {metadata.draft_version}</small>
-        <div className="summary-actions">{(metadata.actions || []).filter((action) => ['edit', 'cancel', 'confirm'].includes(action.key)).map((action) => <button type="button" className={action.key === 'confirm' ? 'primary-button' : 'secondary-button'} key={action.key}
+        <div className="summary-actions">{(conversation.status === 'submitted' ? [] : metadata.actions || []).filter((action) => ['edit', 'cancel', 'confirm'].includes(action.key)).map((action) => <button type="button" className={action.key === 'confirm' ? 'primary-button' : 'secondary-button'} key={action.key}
           disabled={!summaryActive || busy || (action.key === 'confirm' && !conversationFeatures.confirmation)}
           title={action.key === 'confirm' && !conversationFeatures.confirmation ? 'El envío aún no está habilitado' : undefined}
-          onClick={() => action.key === 'edit' ? onEdit() : onAction(action.key)}>{action.label}{action.key === 'confirm' && !conversationFeatures.confirmation ? ' · próximamente' : ''}</button>)}</div>
-        {summaryActive && !conversationFeatures.confirmation && <small>El envío de reportes estará disponible próximamente. Puedes corregir o conservar este borrador.</small>}
+          onClick={() => action.key === 'edit' ? onEdit() : onAction(action.key)}>{action.key === 'confirm' && busy === 'confirm' ? 'Enviando…' : action.label}{action.key === 'confirm' && !conversationFeatures.confirmation ? ' · próximamente' : ''}</button>)}</div>
       </>}
-      {message.type === 'confirmation' && <>
-        {(metadata.folio || reportId) && <small>Reporte #{metadata.folio || reportId}</small>}
+      {message.type === 'confirmation' && <div className="confirmation-card">
+        <strong>✓ Reporte enviado</strong>
+        {(metadata.folio || reportId) && <span>Folio #{metadata.folio || reportId}</span>}
+        {reportStatus && <span>Estado: {reportStatus}</span>}
         {reportId && <button type="button" className="secondary-button" onClick={() => onReport(reportId)}>Ver seguimiento</button>}
-      </>}
+      </div>}
     </div>
   </article>
 }

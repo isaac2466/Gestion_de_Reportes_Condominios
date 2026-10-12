@@ -44,7 +44,7 @@ Si no hay historial se invita a iniciar una conversación explícitamente, evita
 
 ## Dependencias de próximas fases
 
-- Fase 9: el backend no expone `/confirm`. `conversationFeatures.confirmation` permanece en false y “Enviar reporte” está desactivado. La función API y el renderer están preparados. Al conectar el contrato definitivo, verificar su respuesta, refrescar los reportes y probar la transacción real antes de habilitarla.
+- Fase 9: `confirmConversation` usa `POST /api/conversations/{id}/confirm` con la versión actual del borrador. La respuesta actualiza la conversación, muestra la confirmación y el folio real, y refresca reportes e historial. `already_submitted: true` se trata como éxito; un 409 recarga el borrador y un error de red permite reintentar.
 - Fase 10: “Adjuntar” permanece visible y desactivado. No se simulan adjuntos mediante el endpoint tradicional.
 
 `ready_for_confirmation` siempre representa un borrador: nunca aparece en Reportes ni se anuncia como enviado. Se permiten correcciones hasta que el backend cierre la conversación. Cancelar conserva los mensajes y bloquea las entradas.
@@ -93,7 +93,7 @@ Las pruebas de persistencia usan SQLite aislado y el serializer/handler GET real
 
 Las cancelaciones realizadas en esta página se ocultan del listado tras 30 segundos. El plazo se conserva en localStorage por residente y sigue vigente al recargar; no se borran conversaciones ni mensajes del servidor. Las canceladas antiguas se omiten al cargar el listado. La conversación abierta sigue visible para consultar su contenido hasta cambiar a otra.
 
-“Enviar reporte · próximamente” permanece deshabilitado por la Fase 9, con cursor de acción no disponible en lugar de espera.
+“Enviar reporte” muestra “Enviando…” durante la confirmación y queda sustituido por la confirmación del backend cuando el estado pasa a `submitted`.
 
 El administrador incorpora actualización manual, carga y errores persistentes, protección contra doble envío y detalle sincronizado con la lista actual. Los reportes sin análisis muestran “Sin clasificar”, con filtro propio; las fechas inválidas no rompen la interfaz. La selección respeta los filtros y en móvil abre el detalle mediante desplazamiento y foco. Se conserva la identidad visual y se corrige el aviso de estado para que no se salga de la pantalla.
 

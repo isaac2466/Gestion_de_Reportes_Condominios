@@ -23,10 +23,17 @@ from app.schemas.conversation import (
     ConversationListItem,
     ConversationCancelledResponse,
     ConversationTurnResponse,
+    ConversationConfirmRequest,
+    ConversationConfirmResponse,
 )
 
 from app.services.conversation_service import (
     process_conversation_message,
+    confirm_conversation as confirm_conversation_service,
+    ConversationNotFoundError,
+    ConversationNotReadyError,
+    DraftVersionConflictError,
+    IncompleteDraftError,
 )
 
 
@@ -541,3 +548,62 @@ def cancel_conversation(
         status=conversation.estado,
         message="Conversación cancelada correctamente.",
     )
+
+
+@router.post(
+    "/{conversation_id}/confirm",
+    response_model=ConversationConfirmResponse,
+)
+def confirm_report_conversation(
+    conversation_id: int,
+    data: ConversationConfirmRequest,
+    db: Session = Depends(get_db),
+):
+    try:
+        result = confirm_conversation_service(
+            db=db,
+            conversation_id=conversation_id,
+            draft_version=data.draft_version,
+        )
+
+    except ConversationNotFoundError as error:
+        raise HTTPException(
+            status_code=404,
+            detail=str(error),
+        )
+
+    except DraftVersionConflictError as error:
+        raise HTTPException(
+            status_code=409,
+            detail=str(error),
+        )
+
+    except ConversationNotReadyError as error:
+        raise HTTPException(
+            status_code=409,
+            detail=str(error),
+        )
+
+    except IncompleteDraftError as error:
+        raise HTTPException(
+            status_code=400,
+            detail=str(error),
+        )
+
+    conversation = result["conversation"]
+    report = result["report"]
+    assistant_message = result["assistant_message"]
+
+    return {
+        "conversation_id": conversation.id,
+        "status": conversation.estado,
+        "draft_version": conversation.version_borrador,
+        "report": {
+            "id": report.id,
+            "status": report.estado,
+        },
+        "assistant_message": message_to_response(
+            assistant_message
+        ),
+        "already_submitted": result["already_submitted"],
+    }

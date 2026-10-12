@@ -6,7 +6,7 @@ function readDeadlines(key) {
   try { return JSON.parse(localStorage.getItem(key)) || {} } catch { return {} }
 }
 
-export default function useConversations(residentId) {
+export default function useConversations(residentId, onReportsRefresh) {
   const cancellationKey = `reporta-cancelled-${residentId}`
   const [deadlines, setDeadlines] = useState(() => readDeadlines(cancellationKey))
   const [now, setNow] = useState(Date.now)
@@ -163,11 +163,40 @@ export default function useConversations(residentId) {
         setConversation((current) => ({ ...current, status: result.status }))
         setList((items) => items.map((item) => item.conversation_id === conversation.conversation_id ? { ...item, status: result.status } : item))
       } else {
-        await api.confirmConversation(conversation.conversation_id, conversation.draft.version)
-        setConversation(await api.getConversation(conversation.conversation_id))
+        const result = await api.confirmConversation(conversation.conversation_id, conversation.draft.version)
+        const confirmation = result?.assistant_message
+        const fallback = {
+          ...conversation,
+          status: result?.status || 'submitted',
+          report_id: result?.report?.id || conversation.report_id,
+          messages: confirmation
+            ? [...conversation.messages.filter((message) => message.id !== confirmation.id), confirmation]
+            : conversation.messages,
+        }
+        setConversation(fallback)
+        try {
+          const refreshed = await api.getConversation(conversation.conversation_id)
+          const messages = confirmation && !refreshed.messages.some((message) => message.id === confirmation.id)
+            ? [...refreshed.messages, confirmation].sort((first, second) => first.id - second.id)
+            : refreshed.messages
+          setConversation({ ...refreshed, report_id: refreshed.report_id || result?.report?.id || null, messages })
+        } catch {
+          // The confirmation response already contains the submitted state and folio.
+        }
+        void onReportsRefresh?.()
       }
       void refresh()
-    } catch (failure) { await reconcile(failure, conversation.conversation_id) }
+    } catch (failure) {
+      if (kind === 'confirm' && failure.status === 409) {
+        try { setConversation(await api.getConversation(conversation.conversation_id)) } catch { /* Keep the current draft visible. */ }
+        void refresh()
+        setError({ message: 'El reporte fue modificado. Revisa la información actualizada antes de enviarlo.', fields: {} })
+      } else if (kind === 'confirm' && (failure.status >= 500 || !failure.status)) {
+        setError({ message: 'No pudimos enviar el reporte. Inténtalo de nuevo.', fields: {} })
+      } else {
+        await reconcile(failure, conversation.conversation_id)
+      }
+    }
     finally { lock.current = false; setBusy('') }
   }
 

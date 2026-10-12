@@ -33,7 +33,11 @@ await context.route('**/api/**', async (route) => {
   const method = request.method()
   const json = (body, status = 200) => route.fulfill({ status, contentType: 'application/json', body: JSON.stringify(body) })
   requests.push({ path, method, body: request.postDataJSON() })
-  if (path === '/api/reportes') { assert.equal(method, 'GET'); return json([{ reporte: report, imagenes: [] }]) }
+  if (path === '/api/reportes') {
+    assert.equal(method, 'GET')
+    const confirmed = conversations.filter((item) => item.status === 'submitted').map((item) => ({ reporte: { ...report, id: item.report_id, titulo: item.draft.title || report.titulo, estado: 'Pendiente' }, imagenes: [] }))
+    return json([{ reporte: report, imagenes: [] }, ...confirmed])
+  }
   if (path === '/api/conversations' && method === 'GET') return json(conversations.map((c) => ({ conversation_id: c.conversation_id, status: c.status, title: c.draft.title, last_message: c.messages.at(-1).content, report_id: c.report_id, updated_at: timestamp })).reverse())
   if (path === '/api/conversations' && method === 'POST') {
     const c = { conversation_id: conversations.length + 1, resident_id: 1, report_id: null, status: 'collecting', draft: { version: 1 }, messages: [] }
@@ -45,6 +49,13 @@ await context.route('**/api/**', async (route) => {
   if (!c || failRead) return json({ detail: 'No existe' }, 404)
   if (method === 'GET') return json(c)
   if (path.endsWith('/cancel')) { c.status = 'cancelled'; return json({ conversation_id: c.conversation_id, status: c.status }) }
+  if (path.endsWith('/confirm')) {
+    c.status = 'submitted'
+    c.report_id = 12
+    const confirmation = message(c, 'confirmation', 'Reporte recibido correctamente con el folio #12.', { report_id: 12, draft_version: c.draft.version, report_status: 'Pendiente' })
+    c.messages.push(confirmation)
+    return json({ conversation_id: c.conversation_id, status: c.status, draft_version: c.draft.version, report: { id: 12, status: 'Pendiente' }, assistant_message: confirmation, already_submitted: false })
+  }
   if (path.endsWith('/messages')) {
     const body = request.postDataJSON()
     const failure = failNext
@@ -111,8 +122,7 @@ try {
   const sentForms = requests.filter((r) => r.body?.form_data)
   assert.equal(sentForms.at(-1).body.client_message_id, failedId)
   assert.equal(await page.locator('.user-message').count(), 3)
-  assert.equal(await page.getByRole('button', { name: 'Enviar reporte · próximamente', exact: true }).isDisabled(), true)
-  assert.equal(await page.getByRole('button', { name: 'Enviar reporte · próximamente', exact: true }).evaluate((button) => getComputedStyle(button).cursor), 'not-allowed')
+  assert.equal(await page.getByRole('button', { name: 'Enviar reporte', exact: true }).isDisabled(), false)
   assert.equal(await page.getByLabel('¿Dónde ocurre el problema?').isDisabled(), true)
   await page.getByRole('button', { name: 'Corregir información' }).click()
   assert.equal(await composer.getAttribute('placeholder'), 'Escribe qué información quieres corregir…')
@@ -202,9 +212,14 @@ try {
   assert.ok(!(await page.locator('.message-summary').last().textContent()).includes('Tu domicilio'))
   assert.ok((await page.locator('.message-summary').last().textContent()).includes('Parque central'))
   assert.ok((await page.locator('.message-summary').first().textContent()).includes(address), 'historical summary keeps its snapshot')
-  latest.status = 'submitted'
-  latest.report_id = 99
-  latest.messages.push(message(latest, 'confirmation', 'Reporte confirmado por el servidor.', { report_id: 99 }))
+  await page.locator('.message-summary').last().getByRole('button', { name: 'Enviar reporte', exact: true }).click()
+  await page.locator('.message-confirmation').waitFor()
+  assert.equal(await page.getByText('Folio #12', { exact: true }).count(), 1)
+  assert.equal(await page.getByText('Estado: Pendiente', { exact: true }).count(), 1)
+  assert.equal(await composer.isDisabled(), true)
+  await page.getByRole('button', { name: 'Reportes', exact: true }).click()
+  await page.locator('.report-row').nth(1).waitFor()
+  assert.equal(await page.locator('.report-row').count(), 2)
   latest.messages.push(message(latest, 'error', 'No pudimos consultar una actualización.'))
   await page.reload()
   await page.locator('.message-confirmation').waitFor()
@@ -216,7 +231,7 @@ try {
   await page.evaluate(() => localStorage.setItem('reporta-user', JSON.stringify({ id_habitante: 1, Nombre: 'Administrador de prueba', Rol: 'admin' })))
   await page.reload()
   await page.getByRole('heading', { name: 'Gestión de reportes' }).waitFor()
-  assert.equal(await page.locator('.report-row').count(), 1)
+  assert.equal(await page.locator('.report-row').count(), 2)
   assert.equal(await page.locator('.conversation-panel').count(), 0)
   assert.deepEqual(errors, [])
   console.log('PASS: double-click, multi-turn, question, fields, 422, network retry, summary, edit, reload, reports, warning order, scroll, mobile, cancellation, 500, 409, 404, home address summary/privacy/correction, confirmation/error renderers, admin; no page errors.')

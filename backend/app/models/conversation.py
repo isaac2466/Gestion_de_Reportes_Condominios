@@ -10,14 +10,18 @@ from sqlalchemy import (
     ForeignKey,
     TIMESTAMP,
     JSON,
+    DateTime,
+    func,
     Enum as SQLEnum,
 )
 from sqlalchemy.orm import relationship
 from sqlalchemy.sql import func
 
 from app.config.database import Base
-from app.models.report import PrioridadEnum
-
+from app.models.report import (
+    PrioridadEnum,
+    EstadoEnum,
+)
 
 class ConversationStatus(str, enum.Enum):
     collecting = "collecting"
@@ -114,6 +118,11 @@ class ConversacionReporte(Base):
         Integer,
         nullable=False,
         default=1,
+    )
+
+    confirmada_en = Column(
+        DateTime,
+        nullable=True,
     )
 
     fecha_creacion = Column(

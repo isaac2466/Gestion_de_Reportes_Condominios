@@ -5,7 +5,7 @@ from pydantic import BaseModel, ConfigDict, Field
 
 from app.models.conversation import ConversationStatus
 from app.models.message import MessageRole, MessageType
-from app.models.report import PrioridadEnum
+from app.models.report import PrioridadEnum, EstadoEnum
 
 
 class ConversationCreate(BaseModel):
@@ -141,3 +141,20 @@ class ConversationTurnResponse(BaseModel):
     assistant_messages: list[MessageResponse] = Field(
         default_factory=list
     )
+
+class ConversationConfirmRequest(BaseModel):
+    draft_version: int = Field(ge=1)
+
+
+class ConfirmedReportResponse(BaseModel):
+    id: int
+    status: EstadoEnum
+
+
+class ConversationConfirmResponse(BaseModel):
+    conversation_id: int
+    status: ConversationStatus
+    draft_version: int
+    report: ConfirmedReportResponse
+    assistant_message: MessageResponse
+    already_submitted: bool = False

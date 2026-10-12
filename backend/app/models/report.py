@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, String, Text, Numeric, SmallInteger, Enum as SQLEnum, ForeignKey, TIMESTAMP
+from sqlalchemy import Column, Integer, String, Text, JSON, Numeric, SmallInteger, Enum as SQLEnum, ForeignKey, TIMESTAMP
 from sqlalchemy.sql import func
 from app.config.database import Base
 import enum
@@ -29,6 +29,7 @@ class Reporte(Base):
     resumen_ia = Column(Text, nullable=True)
     recomendacion_ia = Column(Text, nullable=True)
     confianza_ia = Column(Numeric(5, 2), nullable=True)
+    datos_contexto = Column(JSON, nullable=True)
     estado = Column(SQLEnum(EstadoEnum), default=EstadoEnum.Pendiente)
     fecha_creacion = Column(TIMESTAMP, server_default=func.now())
     fecha_actualizacion = Column(TIMESTAMP, server_default=func.now(), onupdate=func.now())

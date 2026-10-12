@@ -14,7 +14,7 @@ const placeholders = {
 }
 
 export default function ConversationWorkspace({ user, reports, selectedId, onReport, onRefreshReports, reportsLoading, historyOpen, onCloseHistory }) {
-  const chat = useConversations(user.id_habitante)
+  const chat = useConversations(user.id_habitante, onRefreshReports)
   const { conversation, busy, loading, error } = chat
   const [historyView, setHistoryView] = useState('conversations')
   const [texts, setTexts] = useState({})
@@ -96,7 +96,7 @@ export default function ConversationWorkspace({ user, reports, selectedId, onRep
             {conversation.messages.map((message, index) => {
               const key = `${id}:${message.id}`
               const answer = conversation.messages.slice(index + 1).find((item) => item.role === 'user')?.metadata?.form_data
-              return <ConversationMessage key={key} message={message} conversation={conversation} busy={disabled} values={forms[key] || answer || {}}
+              return <ConversationMessage key={key} message={message} conversation={conversation} busy={busy} values={forms[key] || answer || {}}
                 onChange={(values) => setForms((current) => ({ ...current, [key]: values }))} onSubmit={(values) => send('Completé los datos solicitados.', values)}
                 errors={error?.fields || {}} onEdit={edit} onAction={chat.action} onReport={openReport} />
             })}

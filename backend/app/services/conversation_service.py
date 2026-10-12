@@ -2,8 +2,10 @@ import re
 
 from app.schemas.conversation_ai import ReportDraft
 from app.services.form_catalog import build_form_fields
-from app.models.report import PrioridadEnum
+from app.models.report import PrioridadEnum, Reporte
 from app.models.user import Habitante
+
+from app.services.report_service import create_report_record
 
 from sqlalchemy import func
 from sqlalchemy.orm import Session
@@ -26,6 +28,21 @@ from app.models.conversation import (
 )
 
 from app.services.conversation_ai_service import analyze_conversation
+
+class ConversationNotFoundError(Exception):
+    pass
+
+
+class ConversationNotReadyError(Exception):
+    pass
+
+
+class DraftVersionConflictError(Exception):
+    pass
+
+
+class IncompleteDraftError(Exception):
+    pass
 
 REQUIRED_DRAFT_FIELDS = (
     "description",
@@ -919,3 +936,203 @@ def extraction_from_form_data(
         "context": context,
         "safety_risk": False,
     }
+
+
+def confirm_conversation(
+    db: Session,
+    conversation_id: int,
+    draft_version: int,
+) -> dict:
+    """
+    Convierte de forma transaccional una conversación lista
+    en un Reporte definitivo.
+
+    La operación es idempotente:
+    si la conversación ya fue enviada, devuelve el mismo reporte.
+    """
+
+    try:
+        # Bloquear esta conversación hasta finalizar la transacción.
+        conversation = (
+            db.query(ConversacionReporte)
+            .filter(ConversacionReporte.id == conversation_id)
+            .with_for_update()
+            .first()
+        )
+
+        if conversation is None:
+            raise ConversationNotFoundError(
+                "La conversación no existe."
+            )
+
+        # --------------------------------------------------------
+        # IDEMPOTENCIA
+        # --------------------------------------------------------
+        # Si ya fue confirmada, nunca crear otro reporte.
+        if (
+            conversation.estado == ConversationStatus.submitted
+            and conversation.id_reporte is not None
+        ):
+            report = (
+                db.query(Reporte)
+                .filter(Reporte.id == conversation.id_reporte)
+                .first()
+            )
+
+            if report is None:
+                raise RuntimeError(
+                    "La conversación está enviada pero su reporte no existe."
+                )
+
+            confirmation_message = (
+                db.query(MensajeConversacion)
+                .filter(
+                    MensajeConversacion.id_conversacion
+                    == conversation.id,
+                    MensajeConversacion.tipo
+                    == MessageType.confirmation,
+                )
+                .order_by(MensajeConversacion.id.desc())
+                .first()
+            )
+
+            # Esto normalmente siempre debe existir porque la creación
+            # original es transaccional. Este fallback evita romper
+            # una conversación antigua/inconsistente.
+            if confirmation_message is None:
+                confirmation_message = MensajeConversacion(
+                    id_conversacion=conversation.id,
+                    rol=MessageRole.assistant,
+                    tipo=MessageType.confirmation,
+                    contenido=(
+                        f"Reporte recibido correctamente "
+                        f"con el folio #{report.id}."
+                    ),
+                    metadatos={
+                        "report_id": report.id,
+                        "draft_version": conversation.version_borrador,
+                    },
+                )
+
+                db.add(confirmation_message)
+                db.flush()
+
+            db.commit()
+
+            db.refresh(conversation)
+            db.refresh(report)
+            db.refresh(confirmation_message)
+
+            return {
+                "conversation": conversation,
+                "report": report,
+                "assistant_message": confirmation_message,
+                "already_submitted": True,
+            }
+
+        # --------------------------------------------------------
+        # ESTADO
+        # --------------------------------------------------------
+        if (
+            conversation.estado
+            != ConversationStatus.ready_for_confirmation
+        ):
+            raise ConversationNotReadyError(
+                "La conversación todavía no está lista para enviarse."
+            )
+
+        # --------------------------------------------------------
+        # CONTROL DE VERSIÓN
+        # --------------------------------------------------------
+        if conversation.version_borrador != draft_version:
+            raise DraftVersionConflictError(
+                "El borrador cambió desde la última revisión."
+            )
+
+        # --------------------------------------------------------
+        # RECONSTRUIR Y VALIDAR BORRADOR
+        # --------------------------------------------------------
+        draft = draft_from_conversation(conversation)
+
+        missing_fields = calculate_missing_fields(draft)
+
+        if missing_fields:
+            raise IncompleteDraftError(
+                "El borrador todavía tiene campos obligatorios pendientes."
+            )
+
+        # Protección adicional aunque missing_fields debería cubrirlo.
+        if not draft.description or not draft.location:
+            raise IncompleteDraftError(
+                "Descripción y ubicación son obligatorias."
+            )
+
+        # --------------------------------------------------------
+        # CREAR REPORTE
+        # --------------------------------------------------------
+        report = create_report_record(
+            db,
+            id_habitante=conversation.id_habitante,
+            titulo=draft.title,
+            descripcion=draft.description,
+            locacion=draft.location,
+            categoria=draft.category,
+            prioridad=draft.priority,
+            severidad=draft.severity,
+            resumen_ia=draft.summary,
+            recomendacion_ia=draft.recommendation,
+            datos_contexto=draft.context,
+        )
+
+        # create_report_record() hizo flush(), así que report.id
+        # ya existe, pero todavía NO se ha hecho commit.
+
+        # --------------------------------------------------------
+        # VINCULAR CONVERSACIÓN
+        # --------------------------------------------------------
+        conversation.id_reporte = report.id
+        conversation.estado = ConversationStatus.submitted
+        conversation.confirmada_en = func.now()
+
+        # --------------------------------------------------------
+        # MENSAJE FINAL
+        # --------------------------------------------------------
+        confirmation_message = MensajeConversacion(
+            id_conversacion=conversation.id,
+            rol=MessageRole.assistant,
+            tipo=MessageType.confirmation,
+            contenido=(
+                f"Reporte recibido correctamente "
+                f"con el folio #{report.id}."
+            ),
+            metadatos={
+                "report_id": report.id,
+                "draft_version": conversation.version_borrador,
+                "report_status": "Pendiente",
+            },
+        )
+
+        db.add(confirmation_message)
+
+        # Asegura que todo pueda escribirse antes del commit.
+        db.flush()
+
+        # --------------------------------------------------------
+        # COMMIT ÚNICO
+        # --------------------------------------------------------
+        db.commit()
+
+        db.refresh(conversation)
+        db.refresh(report)
+        db.refresh(confirmation_message)
+
+        return {
+            "conversation": conversation,
+            "report": report,
+            "assistant_message": confirmation_message,
+            "already_submitted": False,
+        }
+
+    except Exception:
+        db.rollback()
+        raise
