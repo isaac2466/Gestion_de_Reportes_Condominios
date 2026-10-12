@@ -49,8 +49,49 @@ REQUIRED_DRAFT_FIELDS = (
     "location",
 )
 
-RESIDENT_LOCATION_KEYS = {"location_source", "location_label"}
+RESIDENT_LOCATION_KEYS = {
+    "location_source",
+    "location_label",
+    "location_detail",
+}
 HOME_REFERENCE = r"mi (?:casa|domicilio|hogar|vivienda)"
+
+HOME_LOCATION_PATTERNS = (
+    ("Banqueta frente a", "Banqueta del domicilio", r"(?:en |por )?(?:la )?banqueta (?:de |del |frente a )?(?:mi (?:casa|domicilio|hogar|vivienda)|la casa)"),
+    ("Frente a", "Frente del domicilio", r"(?:en |por )?(?:el )?frente (?:a |de |del )?(?:mi (?:casa|domicilio|hogar|vivienda)|la casa)"),
+    ("Exterior de", "Exterior del domicilio", r"(?:en |por )?(?:el )?(?:exterior|afuera|fuera) (?:de |del )?(?:mi (?:casa|domicilio|hogar|vivienda)|la casa)"),
+    ("Entrada de", "Entrada del domicilio", r"(?:en |por )?(?:la )?(?:entrada|puerta|acceso) (?:de |del )?(?:mi (?:casa|domicilio|hogar|vivienda)|la casa)"),
+    ("Patio de", "Patio del domicilio", r"(?:en |por )?(?:el )?patio (?:de |del )?(?:mi (?:casa|domicilio|hogar|vivienda)|la casa)"),
+    ("Cochera de", "Cochera del domicilio", r"(?:en |por )?(?:la )?(?:cochera|garage|garaje) (?:de |del )?(?:mi (?:casa|domicilio|hogar|vivienda)|la casa)"),
+    ("Jardín de", "Jardín del domicilio", r"(?:en |por )?(?:el )?jardin (?:de |del )?(?:mi (?:casa|domicilio|hogar|vivienda)|la casa)"),
+    ("Azotea de", "Azotea del domicilio", r"(?:en |por )?(?:la )?(?:azotea|techo) (?:de |del )?(?:mi (?:casa|domicilio|hogar|vivienda)|la casa)"),
+)
+
+
+def resident_home_location_detail(text: str) -> tuple[str, str] | None:
+    """Return a precise qualifier for an area of the resident's home."""
+    normalized = _normalize_text(text)
+    if re.search(r"\b(?:casa de (?:mi |un |una |el |la )?|casa del |otra casa|casa de enfrente)\b", normalized):
+        return None
+    for prefix, label, pattern in HOME_LOCATION_PATTERNS:
+        if re.search(rf"\b{pattern}\b", normalized):
+            return prefix, label
+    return None
+
+
+def resident_home_location_detail_denied(text: str) -> bool:
+    """Detect rejection of a qualified home location without matching 'no hay'."""
+    normalized = _normalize_text(text)
+    for _, _, pattern in HOME_LOCATION_PATTERNS:
+        for match in re.finditer(rf"\b{pattern}\b", normalized):
+            before = normalized[:match.start()]
+            if re.search(
+                r"\b(?:no|nunca)\s+"
+                r"(?:es|esta|era|estaba|fue|ocurre|ocurrio|sucede|sucedio|pasa|paso)\s*$",
+                before,
+            ):
+                return True
+    return False
 
 
 def resident_home_reference(text: str) -> tuple[bool, bool]:
@@ -83,20 +124,24 @@ def resolve_resident_location(
     """Resolve only an own-home reference and retain the saved address snapshot."""
     draft = draft.model_copy(deep=True)
     location = (draft.location or "").strip()
-    relative = bool(re.fullmatch(rf"(?:en )?{HOME_REFERENCE}", _normalize_text(location)))
+    location_detail = resident_home_location_detail(location)
+    relative = bool(re.fullmatch(rf"(?:en )?{HOME_REFERENCE}", _normalize_text(location))) or bool(location_detail)
     mentioned, denied = resident_home_reference(user_message)
+    denied = denied or resident_home_location_detail_denied(user_message)
+    message_detail = resident_home_location_detail(user_message)
+    detail = location_detail or message_detail
     previous_location = conversation.locacion_borrador
     was_resident_address = (conversation.datos_contexto or {}).get("location_source") == "resident_address"
 
     # An explicit concrete extraction/form value always takes precedence.
-    concrete_update = bool(location_update and location_update.strip() and not relative)
+    concrete_update = bool(location_update and location_update.strip() and not relative and not message_detail)
     if denied and not concrete_update and (relative or was_resident_address):
         draft.location = None
         for key in RESIDENT_LOCATION_KEYS:
             draft.context.pop(key, None)
         return draft
 
-    if location and not relative:
+    if location and not relative and not message_detail:
         if location != previous_location or not was_resident_address:
             for key in RESIDENT_LOCATION_KEYS:
                 draft.context.pop(key, None)
@@ -104,25 +149,30 @@ def resolve_resident_location(
 
     for key in RESIDENT_LOCATION_KEYS:
         draft.context.pop(key, None)
-    if denied or not (relative or mentioned):
+    if denied or not (relative or mentioned or detail):
         draft.location = None
         return draft
 
     if was_resident_address and previous_location:
         # Profile edits must not reinterpret a historical incident.
+        old_prefix = (conversation.datos_contexto or {}).get("location_detail")
         address = previous_location
+        if old_prefix and address.startswith(f"{old_prefix} "):
+            address = address[len(old_prefix) + 1:]
     else:
         resident = db.query(Habitante).filter(
             Habitante.id_habitante == conversation.id_habitante
         ).first()
         address = (resident.Direccion or "").strip() if resident else ""
 
-    draft.location = address or None
+    draft.location = f"{detail[0]} {address}" if address and detail else address or None
     if address:
         draft.context.update({
             "location_source": "resident_address",
-            "location_label": "Domicilio del residente",
+            "location_label": detail[1] if detail else "Domicilio del residente",
         })
+        if detail:
+            draft.context["location_detail"] = detail[0]
     return draft
 
 

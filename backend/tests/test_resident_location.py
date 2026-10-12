@@ -69,13 +69,52 @@ class ResidentLocationTests(unittest.TestCase):
     def test_other_homes_and_relative_landmarks_are_not_own_address(self):
         for text in (
             "Hay un problema en casa de mi vecino.", "casa de mi mamá", "otra casa",
-            "la casa de enfrente", "en la casa", "frente a mi casa", "cerca de mi casa",
+            "la casa de enfrente", "en la casa", "cerca de mi casa",
             "junto a mi domicilio", "mi casa de la playa", "mi casamiento",
             "No es en mi casa, es junto al parque.", "No ocurre en mi domicilio.",
             "No está pasando en mi casa.", "No está dentro de mi vivienda.",
+            "No es frente de mi casa, es junto al parque.",
+            "No está afuera de mi casa, está en la caseta.",
         ):
             with self.subTest(text=text):
                 self.assertIsNone(self.resolve(text).location)
+        self.db.query.assert_not_called()
+
+    def test_home_areas_are_saved_with_the_registered_address(self):
+        cases = {
+            "El problema está frente de mi casa.": f"Frente a {ADDRESS}",
+            "Está en el frente de la casa.": f"Frente a {ADDRESS}",
+            "Hay basura afuera de mi domicilio.": f"Exterior de {ADDRESS}",
+            "La fuga está en la entrada de mi casa.": f"Entrada de {ADDRESS}",
+            "Ocurre en el patio de la casa.": f"Patio de {ADDRESS}",
+            "Está en la cochera de mi vivienda.": f"Cochera de {ADDRESS}",
+            "El daño está en la azotea de mi hogar.": f"Azotea de {ADDRESS}",
+            "El bache está en la banqueta frente a mi casa.": f"Banqueta frente a {ADDRESS}",
+        }
+        for text, expected in cases.items():
+            with self.subTest(text=text):
+                draft = self.resolve(text)
+                self.assertEqual(draft.location, expected)
+                self.assertEqual(draft.context["location_source"], "resident_address")
+                self.assertNotEqual(draft.context["location_label"], "Domicilio del residente")
+
+    def test_ai_generic_location_does_not_override_precise_home_reference(self):
+        draft = self.resolve(
+            "Hay un cable caído frente de mi casa.",
+            location="Afuera",
+            update="Afuera",
+        )
+        self.assertEqual(draft.location, f"Frente a {ADDRESS}")
+
+    def test_home_area_snapshot_keeps_original_address(self):
+        saved = self.resolve("Está afuera de mi casa")
+        service.save_draft_to_conversation(self.conversation, saved)
+        self.resident.Direccion = "Dirección nueva"
+        self.db.reset_mock()
+        resolved = service.resolve_resident_location(
+            self.db, self.conversation, saved, "Ahora es frente de mi casa"
+        )
+        self.assertEqual(resolved.location, f"Frente a {ADDRESS}")
         self.db.query.assert_not_called()
 
     def test_missing_address_or_resident_requests_location(self):
