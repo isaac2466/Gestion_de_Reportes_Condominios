@@ -1,11 +1,15 @@
+import re
+
 from app.schemas.conversation_ai import ReportDraft
 from app.services.form_catalog import build_form_fields
 from app.models.report import PrioridadEnum
+from app.models.user import Habitante
 
 from sqlalchemy import func
 from sqlalchemy.orm import Session
 
 from app.services.ai_service import (
+    _normalize_text,
     analyze_report,
     validate_report,
 )
@@ -27,6 +31,82 @@ REQUIRED_DRAFT_FIELDS = (
     "description",
     "location",
 )
+
+RESIDENT_LOCATION_KEYS = {"location_source", "location_label"}
+HOME_REFERENCE = r"mi (?:casa|domicilio|hogar|vivienda)"
+
+
+def resident_home_reference(text: str) -> tuple[bool, bool]:
+    """Return (own home mentioned, explicitly denied); never infer other homes."""
+    normalized = _normalize_text(text)
+    affirmative = False
+    denied = False
+    for match in re.finditer(rf"\b{HOME_REFERENCE}\b", normalized):
+        before = normalized[:match.start()]
+        after = normalized[match.end():]
+        if re.search(
+            r"\b(?:no|nunca|tampoco|ni)\s+"
+            r"(?:(?:es|esta|era|estaba|fue|ocurre|ocurrio|sucede|sucedio|pasa|paso)\s+)?"
+            r"(?:(?:ocurriendo|pasando|sucediendo|ubicado|ubicada)\s+)?"
+            r"(?:(?:en|dentro de)\s+)?$", before,
+        ):
+            denied = True
+        elif not re.search(r"\b(?:de|a|desde|hacia|hasta)\s+$", before) and not re.match(r"\s+(?:de|del|en)\b", after):
+            affirmative = True
+    return affirmative, denied
+
+
+def resolve_resident_location(
+    db: Session,
+    conversation: ConversacionReporte,
+    draft: ReportDraft,
+    user_message: str,
+    location_update: str | None = None,
+) -> ReportDraft:
+    """Resolve only an own-home reference and retain the saved address snapshot."""
+    draft = draft.model_copy(deep=True)
+    location = (draft.location or "").strip()
+    relative = bool(re.fullmatch(rf"(?:en )?{HOME_REFERENCE}", _normalize_text(location)))
+    mentioned, denied = resident_home_reference(user_message)
+    previous_location = conversation.locacion_borrador
+    was_resident_address = (conversation.datos_contexto or {}).get("location_source") == "resident_address"
+
+    # An explicit concrete extraction/form value always takes precedence.
+    concrete_update = bool(location_update and location_update.strip() and not relative)
+    if denied and not concrete_update and (relative or was_resident_address):
+        draft.location = None
+        for key in RESIDENT_LOCATION_KEYS:
+            draft.context.pop(key, None)
+        return draft
+
+    if location and not relative:
+        if location != previous_location or not was_resident_address:
+            for key in RESIDENT_LOCATION_KEYS:
+                draft.context.pop(key, None)
+        return draft
+
+    for key in RESIDENT_LOCATION_KEYS:
+        draft.context.pop(key, None)
+    if denied or not (relative or mentioned):
+        draft.location = None
+        return draft
+
+    if was_resident_address and previous_location:
+        # Profile edits must not reinterpret a historical incident.
+        address = previous_location
+    else:
+        resident = db.query(Habitante).filter(
+            Habitante.id_habitante == conversation.id_habitante
+        ).first()
+        address = (resident.Direccion or "").strip() if resident else ""
+
+    draft.location = address or None
+    if address:
+        draft.context.update({
+            "location_source": "resident_address",
+            "location_label": "Domicilio del residente",
+        })
+    return draft
 
 
 def merge_draft(
@@ -58,7 +138,7 @@ def merge_draft(
     context_updates = extraction.get("context") or {}
 
     for key, value in context_updates.items():
-        if value is not None:
+        if key not in RESIDENT_LOCATION_KEYS and value is not None:
             current_context[key] = value
 
     data["context"] = current_context
@@ -168,7 +248,9 @@ def complete_draft_analysis(
     analysis = analyze_report(
         title_for_analysis,
         draft.description,
-        draft.location,
+        "Domicilio del residente"
+        if draft.context.get("location_source") == "resident_address"
+        else draft.location,
     )
 
     data = draft.model_dump()
@@ -548,6 +630,15 @@ def process_conversation_message(
         else:
             # Si Ollama falla no destruimos el borrador.
             updated_draft = current_draft
+
+        # Resolve Python-owned location metadata before missing fields/versioning.
+        reference_text = user_message
+        if form_data:
+            reference_text = " ".join(str(form_data.get(key) or "") for key in ("description", "location"))
+        updated_draft = resolve_resident_location(
+            db, conversation, updated_draft, reference_text,
+            location_update=(extraction or {}).get("location"),
+        )
 
         # 4. Detectar si realmente cambió información.
         draft_changed = (

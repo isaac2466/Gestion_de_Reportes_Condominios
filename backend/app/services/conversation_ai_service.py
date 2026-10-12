@@ -23,6 +23,12 @@ def analyze_conversation(
 
     try:
         draft = ReportDraft.model_validate(current_draft)
+        # The address snapshot is for review/persistence, not model context.
+        if draft.context.get("location_source") == "resident_address":
+            draft = draft.model_copy(deep=True)
+            draft.location = "En mi domicilio"
+            draft.context.pop("location_source", None)
+            draft.context.pop("location_label", None)
 
         recent_messages = recent_messages[-8:]
 
@@ -110,6 +116,16 @@ REGLAS DE UBICACIÓN Y CONTEXTO:
 
 - "location" SOLO puede ir en el campo superior "location".
 - NUNCA guardes "location" dentro de "context".
+
+- "En mi casa", "en mi domicilio", "en mi hogar" y "mi vivienda" sí son
+  ubicaciones. Devuelve la referencia literal; Python resolverá la dirección.
+- Nunca inventes una dirección ni generes location_source o location_label.
+- No confundas la casa de un vecino o familiar con el domicilio del usuario.
+- Una negación como "No es en mi casa, es junto al parque" debe producir
+  solamente la ubicación nueva: "Junto al parque".
+
+Usuario: "Se fue la luz en mi casa."
+Resultado: location = "En mi casa"
 
 - "safety_risk" SOLO puede ir en el campo superior "safety_risk".
 - NUNCA guardes "safety_risk" dentro de "context".
