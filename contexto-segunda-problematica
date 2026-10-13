@@ -1,0 +1,54 @@
+# Formación inteligente de equipos de estudio y trabajo mediante IA
+
+### El problema
+En las universidades, los estudiantes suelen formar equipos de trabajo con sus amigos o personas que conocen, sin considerar si sus habilidades realmente se complementan. Esto puede provocar que algunos integrantes tengan conocimientos similares, mientras que otras áreas importantes del proyecto queden desatendidas. Además, encontrar compañeros con habilidades específicas puede ser complicado, especialmente cuando hay muchos estudiantes de diferentes carreras y grupos.
+
+### La solución
+Desarrollar una plataforma inteligente que ayude a los estudiantes a encontrar compañeros y formar equipos de trabajo equilibrados. Cada estudiante podrá crear un perfil donde describa libremente en qué es bueno, qué se le dificulta, cuáles son sus intereses y qué le gustaría aprender. También podrán registrar proyectos, indicando qué necesitan desarrollar, cuántos integrantes requieren y qué habilidades serían útiles.
+
+A partir de esta información, el sistema analizará los perfiles y recomendará compañeros cuyas fortalezas puedan complementar las debilidades de otros, tomando en cuenta los requisitos del proyecto, los intereses y la disponibilidad de cada estudiante.
+
+### ¿Cómo se utilizaría la inteligencia artificial?
+La IA será el componente principal de la plataforma y funcionará de manera local, utilizando modelos como *Llama y Nomic*.
+
+Primero, *Llama interpretará las descripciones escritas por los estudiantes*, identificando automáticamente sus habilidades, dificultades e intereses, aunque utilicen diferentes palabras para expresarlos. También podrá analizar las descripciones de los proyectos para identificar qué conocimientos y perfiles se necesitan.
+
+Después, *Nomic transformará esa información en representaciones numéricas llamadas embeddings*, que permitirán encontrar relaciones entre las habilidades de los estudiantes y las necesidades de los proyectos, incluso cuando no estén descritas exactamente de la misma manera.
+
+Con esta información, un algoritmo de compatibilidad desarrollado en Python evaluará qué estudiantes se complementan mejor, cuáles cumplen los requisitos de un proyecto y qué combinaciones podrían formar equipos equilibrados.
+
+Finalmente, Llama podrá generar una explicación sencilla de cada recomendación, indicando por qué esas personas serían buenos compañeros y qué habilidades aportaría cada una.
+
+### Flujo de uso de la plataforma
+
+*1. Registro y creación del perfil:* El estudiante ingresará a la plataforma y creará su cuenta. Durante la configuración inicial, podrá escribir libremente cuáles son sus habilidades, qué se le dificulta, qué temas le interesan y cuáles son sus horarios disponibles. La IA analizará esta información y organizará automáticamente su perfil, permitiendo que el estudiante revise o modifique los datos identificados.
+
+*2. Página principal:* Después de iniciar sesión, el estudiante encontrará una página de inicio con recomendaciones personalizadas, proyectos disponibles, invitaciones para colaborar y los equipos a los que pertenece. La plataforma podrá mostrar sugerencias generadas por la IA sin necesidad de que el usuario realice una búsqueda manual.
+
+*3. Creación de proyectos:* Los estudiantes podrán publicar proyectos académicos o personales para los que necesiten colaboradores. Bastará con escribir una descripción, por ejemplo: "Quiero desarrollar una aplicación móvil y necesito tres compañeros que sepan programación, diseño de interfaces y bases de datos". La IA interpretará la descripción, identificará los conocimientos necesarios y ayudará a establecer los perfiles que se buscan.
+
+*4. Búsqueda inteligente de compañeros:* Una vez registrado el proyecto, el sistema analizará los perfiles de los estudiantes disponibles y calculará cuáles podrían aportar las habilidades necesarias. En lugar de recomendar únicamente personas con conocimientos similares, buscará compañeros que se complementen entre sí y que tengan intereses o disponibilidades compatibles.
+
+*5. Recomendaciones de IA:* La plataforma mostrará una lista de estudiantes recomendados, acompañada de una explicación de por qué podrían ser buenos integrantes. Por ejemplo: "Ana tiene experiencia en diseño de interfaces, una de las habilidades que necesita tu proyecto. Además, comparte tu interés por el desarrollo de aplicaciones".
+
+*6. Formación de equipos:* Los estudiantes podrán enviar invitaciones a las personas recomendadas para colaborar en sus proyectos. Cuando estas acepten, se integrarán al equipo y podrán consultar quiénes son sus integrantes, qué habilidades aporta cada uno y la información general del proyecto. En una versión más avanzada, la IA también podrá proponer equipos completos de manera automática.
+
+*7. Recomendaciones automáticas y notificaciones:* La IA también trabajará en segundo plano. Cuando se registre un nuevo proyecto, cambien las habilidades de algún estudiante o se actualicen periódicamente las recomendaciones, el sistema podrá detectar nuevas oportunidades de colaboración. Si encuentra una coincidencia interesante, enviará una notificación como: "Encontramos un proyecto de desarrollo web en el que tus conocimientos de Python podrían ser útiles" o "Tal vez te interese formar equipo con Ana para tu proyecto de bases de datos".
+
+*8. Actualización continua:* Los estudiantes podrán modificar sus habilidades, intereses y disponibilidad conforme avancen en sus estudios. Cada vez que se actualice información importante, la plataforma podrá volver a analizar su perfil y generar recomendaciones más adecuadas.
+
+### Ejemplo de funcionamiento
+Un estudiante escribe que domina Python y bases de datos, pero tiene dificultades con el diseño de interfaces. Otro estudiante indica que sabe utilizar Figma y diseñar aplicaciones, pero no tiene mucha experiencia programando.
+
+Posteriormente, alguien publica un proyecto que consiste en desarrollar una aplicación web y necesita integrantes con conocimientos de programación y diseño.
+
+La IA analizará los requisitos del proyecto y detectará que ambos estudiantes tienen habilidades complementarias. Entonces, la plataforma podrá recomendarlos como posibles compañeros, explicando qué puede aportar cada uno. Incluso podría sugerir a un tercer estudiante que tenga conocimientos de gestión de proyectos para formar un equipo más completo.
+
+Los estudiantes recibirán la recomendación y podrán decidir si desean colaborar.
+
+### ¿Qué hace interesante esta propuesta?
+A diferencia de un chatbot convencional, la inteligencia artificial no se limitará a responder preguntas. Su función principal será trabajar de manera inteligente en segundo plano, interpretando información, identificando habilidades, analizando proyectos y descubriendo oportunidades de colaboración entre estudiantes.
+
+La plataforma combinará modelos de lenguaje, embeddings y algoritmos de compatibilidad para generar recomendaciones personalizadas y explicables. Además, al utilizar modelos locales, la información podrá procesarse dentro de la infraestructura de la institución sin depender de servicios externos de IA, siempre que la implementación se mantenga completamente local y cuente con controles adecuados de privacidad.
+
+El objetivo no será simplemente conectar personas que tengan los mismos intereses, sino *formar equipos donde cada integrante aporte conocimientos y habilidades diferentes, facilitando la colaboración, el aprendizaje y el desarrollo de mejores proyectos académicos*.
